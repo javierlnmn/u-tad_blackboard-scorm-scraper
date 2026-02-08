@@ -7,12 +7,6 @@ SIDEBAR_LESSON_LINKS_SELECTOR = f'#nav-content-sidebar {SIDEBAR_LESSON_LINKS_CLA
 
 
 def parse_sidebar(html: str) -> list[SidebarItem]:
-    """
-    Parse the sidebar HTML and return lesson items in document order.
-
-    Expects #nav-content-sidebar with outline sections; each lesson is an
-    <a class="nav-sidebar__outline-section-item__link" data-link="lesson-link-item">.
-    """
     soup = BeautifulSoup(html, 'html.parser')
     sidebar = soup.select_one('#nav-content-sidebar')
     if not sidebar:

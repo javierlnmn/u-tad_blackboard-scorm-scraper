@@ -1,5 +1,3 @@
-"""Write extracted course content to disk."""
-
 import logging
 from pathlib import Path
 

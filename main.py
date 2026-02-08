@@ -1,5 +1,3 @@
-"""Entry point: open browser, wait for SCORM popup, extract course, write output."""
-
 import logging
 import sys
 

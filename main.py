@@ -32,6 +32,12 @@ def main() -> None:
 
         scorm_page = popup_info.value
         scorm_page.wait_for_load_state()
+        scorm_page.set_viewport_size(
+            {
+                'width': settings.viewport_width,
+                'height': settings.viewport_height,
+            }
+        )
 
         lessons = extract_course(scorm_page)
         write_course(lessons, settings.output_path)

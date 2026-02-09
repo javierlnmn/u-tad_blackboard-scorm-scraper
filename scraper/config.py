@@ -1,26 +1,24 @@
-from dataclasses import dataclass
+from __future__ import annotations
+
+DEFAULT_BASE_URL = 'https://u-tad.blackboard.com/'
+DEFAULT_VIEWPORT_WIDTH = 1920
+DEFAULT_VIEWPORT_HEIGHT = 1080
+DEFAULT_COURSE_NAME = 'course'
+DEFAULT_OUTPUT_FORMAT = 'md'
 
 
-@dataclass(frozen=True)
-class Settings:
-    base_url: str
-    viewport_width: int
-    viewport_height: int
-    output_path: str
+class Config:
+    def __init__(self) -> None:
+        self.base_url = DEFAULT_BASE_URL
+        self.viewport_width = DEFAULT_VIEWPORT_WIDTH
+        self.viewport_height = DEFAULT_VIEWPORT_HEIGHT
+        self.course_name = DEFAULT_COURSE_NAME
+        self.output_format = DEFAULT_OUTPUT_FORMAT  # "md" | "pdf" | "txt"
+        self.output_path = f'./output/{self.course_name}.{self.output_format}'
 
 
-def load_settings() -> Settings:
-    """Build settings from environment variables."""
-    import os
-    from os.path import dirname, join
+_CONFIG = Config()
 
-    from dotenv import load_dotenv
 
-    load_dotenv(join(dirname(__file__), '..', '.env'))
-
-    return Settings(
-        base_url=os.getenv('BLACKBOARD_URL', 'https://u-tad.blackboard.com/').strip() or '',
-        viewport_width=int(os.getenv('VIEWPORT_WIDTH', '1920')),
-        viewport_height=int(os.getenv('VIEWPORT_HEIGHT', '1080')),
-        output_path=os.getenv('OUTPUT_PATH', 'curso.txt'),
-    )
+def get_config() -> Config:
+    return _CONFIG

@@ -3,19 +3,21 @@ import sys
 
 from playwright.sync_api import sync_playwright
 
-from scraper.config import load_settings
+from scraper.config import get_config
 from scraper.extractors.course import extract_course
 from scraper.output import write_course
+from scraper.setup import run_setup_wizard
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 
 def main() -> None:
-    settings = load_settings()
+    run_setup_wizard()
+    settings = get_config()
 
     if not settings.base_url:
-        logger.error('BLACKBOARD_URL is not set. Set it in .env or as environment variable.')
+        logger.error('Base URL is not set.')
         sys.exit(1)
 
     with sync_playwright() as p:
@@ -36,7 +38,7 @@ def main() -> None:
         scorm_page.wait_for_load_state()
 
         lessons = extract_course(scorm_page)
-        write_course(lessons, settings.output_path)
+        write_course(lessons, settings.output_path, output_format=settings.output_format)
 
 
 if __name__ == '__main__':

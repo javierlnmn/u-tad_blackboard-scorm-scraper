@@ -2,7 +2,7 @@ import logging
 
 from playwright.sync_api import Frame, Page
 
-from scraper.extractors.lesson import extract_lesson, find_frame_with_visible_locator
+from scraper.extractors.lesson import extract_lesson, find_frame_with_matching_element
 from scraper.models import LessonContent
 from scraper.parsers.sidebar import SIDEBAR_LESSON_LINKS_SELECTOR, parse_sidebar
 
@@ -28,10 +28,10 @@ def extract_course(scorm_page: Page) -> list[LessonContent]:
         scorm_frame = _frame_from_iframe(scorm_page, 'iframe')
 
     if not scorm_frame:
-        scorm_frame = find_frame_with_visible_locator(scorm_page, SIDEBAR_SELECTOR)
+        scorm_frame = find_frame_with_matching_element(scorm_page, SIDEBAR_SELECTOR)
 
     if not scorm_frame:
-        scorm_frame = find_frame_with_visible_locator(scorm_page, LESSON_CONTENT_SELECTOR)
+        scorm_frame = find_frame_with_matching_element(scorm_page, LESSON_CONTENT_SELECTOR)
 
     if not scorm_frame:
         raise RuntimeError('Could not resolve SCORM content frame.')

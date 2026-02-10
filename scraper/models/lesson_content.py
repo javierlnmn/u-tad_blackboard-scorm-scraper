@@ -1,10 +1,6 @@
 from dataclasses import dataclass
 
-
-@dataclass
-class LessonContentPart:
-    # TODO: Implement different lesson contents
-    text: str
+from scraper.parsers.blocks import LessonBlock
 
 
 @dataclass
@@ -12,4 +8,4 @@ class LessonContent:
     """Text content extracted for one lesson."""
 
     label: str
-    contents: list[LessonContentPart]
+    blocks: list[LessonBlock]

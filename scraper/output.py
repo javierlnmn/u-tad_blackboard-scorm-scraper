@@ -7,7 +7,18 @@ logger = logging.getLogger(__name__)
 
 
 def _render_plain_text(lessons: list[LessonContent]) -> str:
-    return '\n\n'.join(lesson.text for lesson in lessons).strip() + '\n'
+    chunks: list[str] = []
+
+    for lesson in lessons:
+        chunks.append(lesson.label.strip())
+        for block in lesson.blocks:
+            rendered = block.render('md').strip()
+            if rendered:
+                chunks.append(rendered)
+
+        chunks.append('')
+
+    return '\n\n'.join(c for c in chunks if c is not None).rstrip() + '\n'
 
 
 def write_course(lessons: list[LessonContent], path: str | Path, *, output_format: str = 'md') -> None:

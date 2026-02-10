@@ -1,8 +1,9 @@
 import logging
 
-from playwright.sync_api import Frame, Page
+from playwright.sync_api import Frame, Locator, Page
 
 from scraper.extractors.lesson import extract_lesson, find_frame_with_matching_element
+from scraper.models.course_scheme import CourseSchemeSection
 from scraper.models.lesson_content import LessonContent
 from scraper.parsers.sidebar import SIDEBAR_LESSON_LINKS_SELECTOR, parse_sidebar
 
@@ -18,6 +19,15 @@ def _frame_from_iframe(page: Page, iframe_query_selector: str) -> Frame | None:
     if not iframe:
         return None
     return iframe.content_frame()
+
+
+def _get_course_scheme(scorm_frame: Locator) -> list[CourseSchemeSection]:
+    sidebar = scorm_frame.locator(SIDEBAR_SELECTOR)
+    sidebar.wait_for(state='visible')
+    sidebar_html = sidebar.inner_html()
+    wrapped = f'<div id="nav-content-sidebar">{sidebar_html}</div>'
+    course_scheme = parse_sidebar(wrapped)
+    return course_scheme
 
 
 def extract_course(scorm_page: Page) -> list[LessonContent]:
@@ -38,12 +48,8 @@ def extract_course(scorm_page: Page) -> list[LessonContent]:
     else:
         logger.info('Resolved SCORM content frame.')
 
-    logger.info('Parsing sidebar...')
-    sidebar = scorm_frame.locator(SIDEBAR_SELECTOR)
-    sidebar.wait_for(state='visible')
-    sidebar_html = sidebar.inner_html()
-    wrapped = f'<div id="nav-content-sidebar">{sidebar_html}</div>'
-    course_scheme = parse_sidebar(wrapped)
+    logger.info('Parsing course scheme...')
+    course_scheme = _get_course_scheme(scorm_frame)
 
     if not course_scheme:
         logger.warning('No course scheme sections/lessons found.')

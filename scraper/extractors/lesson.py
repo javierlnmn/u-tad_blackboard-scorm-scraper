@@ -3,7 +3,8 @@ import logging
 from playwright.sync_api import Frame, Page, TimeoutError
 
 from scraper.models.course_scheme import CourseSchemeLesson
-from scraper.models.lesson_content import LessonContent, LessonContentPart
+from scraper.models.lesson_content import LessonContent
+from scraper.parsers.blocks import LessonBlock
 from scraper.parsers.lesson import parse_lesson_content
 
 logger = logging.getLogger(__name__)
@@ -50,8 +51,8 @@ def extract_lesson(
         logger.info('Lesson content found after refresh.')
 
     lesson_el = scorm_frame.locator(lesson_content_selector).first
-    parsed_contents: list[LessonContentPart] = parse_lesson_content(lesson_el)
-    lesson = LessonContent(label=item.title, contents=parsed_contents)
+    parsed_blocks: list[LessonBlock] = parse_lesson_content(lesson_el)
+    lesson = LessonContent(label=item.title, blocks=parsed_blocks)
 
     logger.info('Scraped %s/%s: %s', item.index + 1, total_items, item.title)
     return scorm_frame, lesson

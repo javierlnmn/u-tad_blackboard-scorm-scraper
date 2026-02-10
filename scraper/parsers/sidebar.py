@@ -1,52 +1,72 @@
 from bs4 import BeautifulSoup
 
-from scraper.models.sidebar import SidebarItem, SidebarLessonsSection
+from scraper.models.course_scheme import CourseSchemeLesson, CourseSchemeSection
 
-SIDEBAR_LESSONS_SECTION_TEXT_CLASS = 'nav-sidebar__outline-section-toggle-text'
-
+SIDEBAR_SECTION_TITLE_CLASS = 'nav-sidebar__outline-section-toggle-text'
 SIDEBAR_LESSON_LINKS_CLASS = 'a.nav-sidebar__outline-section-item__link'
+
 SIDEBAR_LESSON_LINKS_SELECTOR = f'#nav-content-sidebar {SIDEBAR_LESSON_LINKS_CLASS}'
 
 
-def parse_sidebar(html: str) -> list[SidebarLessonsSection]:
+def _lesson_id_from_href(href: str | None) -> str | None:
+    if not href:
+        return None
+    marker = '#/lessons/'
+    if marker in href:
+        return href.split(marker, 1)[1] or None
+    return None
+
+
+def parse_sidebar(html: str) -> list[CourseSchemeSection]:
     soup = BeautifulSoup(html, 'html.parser')
     sidebar = soup.select_one('#nav-content-sidebar')
     if not sidebar:
         return []
 
     global_lesson_index = 0
-    sections: list[SidebarLessonsSection] = []
+    sections: list[CourseSchemeSection] = []
 
     for section_li in sidebar.select('li.nav-sidebar__outline-section'):
-        title_el = section_li.select_one(f'.{SIDEBAR_LESSONS_SECTION_TEXT_CLASS}')
-        section_label = (title_el.get_text(strip=True) if title_el else '') or 'Lessons'
+        title_el = section_li.select_one(f'.{SIDEBAR_SECTION_TITLE_CLASS}')
+        section_title = (title_el.get_text(strip=True) if title_el else '') or 'Lessons'
 
-        items: list[SidebarItem] = []
+        lessons: list[CourseSchemeLesson] = []
         for a in section_li.select(SIDEBAR_LESSON_LINKS_CLASS):
-            label = a.get_text(strip=True)
-            if not label:
+            title = a.get_text(strip=True)
+            if not title:
                 continue
-            items.append(
-                SidebarItem(
+
+            href = a.get('href')
+            lessons.append(
+                CourseSchemeLesson(
                     index=global_lesson_index,
-                    label=label,
-                    href=a.get('href'),
+                    title=title,
+                    href=href,
+                    lesson_id=_lesson_id_from_href(href),
                 )
             )
             global_lesson_index += 1
 
-        if items:
-            sections.append(SidebarLessonsSection(label=section_label, items=items))
+        if lessons:
+            sections.append(CourseSchemeSection(title=section_title.title().strip(), lessons=lessons))
 
     if not sections:
-        items: list[SidebarItem] = []
+        lessons: list[CourseSchemeLesson] = []
         for a in sidebar.select(SIDEBAR_LESSON_LINKS_CLASS):
-            label = a.get_text(strip=True)
-            if not label:
+            title = a.get_text(strip=True)
+            if not title:
                 continue
-            items.append(SidebarItem(index=global_lesson_index, label=label, href=a.get('href')))
+            href = a.get('href')
+            lessons.append(
+                CourseSchemeLesson(
+                    index=global_lesson_index,
+                    title=title.title().strip(),
+                    href=href,
+                    lesson_id=_lesson_id_from_href(href),
+                )
+            )
             global_lesson_index += 1
-        if items:
-            return [SidebarLessonsSection(label='Lessons', items=items)]
+        if lessons:
+            return [CourseSchemeSection(title='Lessons', lessons=lessons)]
 
     return sections

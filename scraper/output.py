@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from scraper.models import LessonContent
+from scraper.models.lesson_content import LessonContent
 
 logger = logging.getLogger(__name__)
 

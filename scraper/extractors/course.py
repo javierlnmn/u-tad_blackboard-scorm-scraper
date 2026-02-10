@@ -3,7 +3,7 @@ import logging
 from playwright.sync_api import Frame, Page
 
 from scraper.extractors.lesson import extract_lesson, find_frame_with_matching_element
-from scraper.models import LessonContent
+from scraper.models.lesson_content import LessonContent
 from scraper.parsers.sidebar import SIDEBAR_LESSON_LINKS_SELECTOR, parse_sidebar
 
 logger = logging.getLogger(__name__)
@@ -43,22 +43,28 @@ def extract_course(scorm_page: Page) -> list[LessonContent]:
     sidebar.wait_for(state='visible')
     sidebar_html = sidebar.inner_html()
     wrapped = f'<div id="nav-content-sidebar">{sidebar_html}</div>'
-    items = parse_sidebar(wrapped)
+    course_scheme = parse_sidebar(wrapped)
 
-    if not items:
-        logger.warning('No sidebar items found.')
+    if not course_scheme:
+        logger.warning('No course scheme sections/lessons found.')
         return []
     else:
-        logger.info('Found %s sidebar items.', len(items))
+        total_items = sum(len(s.lessons) for s in course_scheme)
+        logger.info(
+            'Found %s course scheme sections with %s total lessons.',
+            len(course_scheme),
+            total_items,
+        )
 
     lessons: list[LessonContent] = []
 
-    for item in items:
+    lesson_refs = [lesson for section in course_scheme for lesson in section.lessons]
+    for lesson_ref in lesson_refs:
         scorm_frame, lesson = extract_lesson(
             scorm_page=scorm_page,
             scorm_frame=scorm_frame,
-            item=item,
-            total_items=len(items),
+            item=lesson_ref,
+            total_items=len(lesson_refs),
             sidebar_lesson_links_selector=SIDEBAR_LESSON_LINKS_SELECTOR,
             lesson_content_selector=LESSON_CONTENT_SELECTOR,
             timeout_ms=5000,

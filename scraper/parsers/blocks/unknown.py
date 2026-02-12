@@ -7,7 +7,9 @@ from scraper.parsers.blocks import LessonBlock
 
 @dataclass(slots=True)
 class UnknownBlock(LessonBlock):
-    def _parse(self) -> None:
+    # No selector: this is only used as the fallback.
+
+    def _scrape(self) -> None:
         plain = (self.locator.inner_text() or '').strip()
         self.plain_text = plain
         self.markdown = plain

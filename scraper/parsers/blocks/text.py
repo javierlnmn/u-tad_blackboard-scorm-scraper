@@ -7,7 +7,9 @@ from scraper.parsers.blocks import LessonBlock
 
 @dataclass(slots=True)
 class TextBlock(LessonBlock):
-    def _parse(self) -> None:
+    query_selector = '.fr-view'
+
+    def _scrape(self) -> None:
         fr = self.locator.locator('.fr-view').first
         text = fr.inner_text() if fr.count() else self.locator.inner_text()
         plain = (text or '').strip()

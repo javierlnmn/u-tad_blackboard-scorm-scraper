@@ -7,7 +7,9 @@ from scraper.parsers.blocks import LessonBlock
 
 @dataclass(slots=True)
 class CodeBlock(LessonBlock):
-    def _parse(self) -> None:
+    query_selector = 'pre.block-text__code, .block-text--code'
+
+    def _scrape(self) -> None:
         pre = self.locator.locator('pre.block-text__code').first
         code = pre.inner_text() if pre.count() else self.locator.inner_text()
         code = (code or '').rstrip('\n')

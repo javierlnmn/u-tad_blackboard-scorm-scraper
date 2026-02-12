@@ -17,24 +17,10 @@ class BlockParser:
         self.wrapper = wrapper
 
     def _identify_block(self) -> type[LessonBlock]:
-        # Code
-        if (
-            self.wrapper.locator('pre.block-text__code').count()
-            or self.wrapper.locator('.block-text--code').count()
-        ):
-            return CodeBlock
-
-        # Title/heading block
-        if self.wrapper.locator('.block-text__heading').count():
-            return TitleBlock
-
-        # Rich text block
-        if self.wrapper.locator('.fr-view').count():
-            return TextBlock
-
-        # Placeholder for widget blocks (not implemented yet)
-        if self.wrapper.locator('.block-image').count() and self.wrapper.locator('button').count():
-            return ImageWithButtonsBlock
+        for block_cls in (CodeBlock, TitleBlock, TextBlock, ImageWithButtonsBlock):
+            selector = getattr(block_cls, 'query_selector', '') or ''
+            if selector and self.wrapper.locator(selector).count():
+                return block_cls
 
         return UnknownBlock
 

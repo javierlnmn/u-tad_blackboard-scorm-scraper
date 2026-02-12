@@ -1,6 +1,6 @@
 from playwright.sync_api import Locator
 
-from scraper.parsers.block_parser import BlockParser
+from scraper.parsers.block_scraper import BlockParser
 from scraper.parsers.blocks import LessonBlock
 
 
@@ -14,8 +14,8 @@ def parse_lesson_content(lesson_el: Locator) -> list[LessonBlock]:
         wrapper = blocks.nth(i)
         block_id = wrapper.get_attribute('data-block-id')
 
-        block_parser = BlockParser(wrapper)
-        block = block_parser.parse_block(block_id=block_id)
+        block_scraper = BlockParser(wrapper)
+        block = block_scraper.parse_block(block_id=block_id)
 
         parts.append(block)
 

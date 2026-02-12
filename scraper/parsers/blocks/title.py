@@ -7,9 +7,11 @@ from scraper.parsers.blocks import LessonBlock
 
 @dataclass(slots=True)
 class TitleBlock(LessonBlock):
+    query_selector = '.block-text__heading'
+
     level: int | None = None
 
-    def _parse(self) -> None:
+    def _scrape(self) -> None:
         heading = self.locator.locator('.block-text__heading').first
         level = None
         for i in range(1, 7):

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from bs4 import BeautifulSoup
 
 from scraper.models.course_scheme import CourseSchemeLesson, CourseSchemeSection

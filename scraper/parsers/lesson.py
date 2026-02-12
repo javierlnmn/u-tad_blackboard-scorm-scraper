@@ -1,6 +1,6 @@
 from playwright.sync_api import Locator
 
-from scraper.parsers.block_scraper import BlockParser
+from scraper.parsers.block_parser import BlockParser
 from scraper.parsers.blocks import LessonBlock
 
 

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from scraper.parsers.blocks import LessonBlock
+from scraper.parsers.blocks.base import LessonBlock
 
 
-@dataclass(slots=True)
+@dataclass()
 class ImageWithButtonsBlock(LessonBlock):
     query_selector = '.block-image button, .block-image [role="button"]'
 

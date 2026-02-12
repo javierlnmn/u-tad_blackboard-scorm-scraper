@@ -7,7 +7,7 @@ from typing import ClassVar
 from playwright.sync_api import Locator
 
 
-@dataclass(slots=True)
+@dataclass
 class LessonBlock(ABC):
     query_selector: ClassVar[str] = ''
 

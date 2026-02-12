@@ -44,7 +44,7 @@ def _render_index(entries: list[tuple[int, str]]) -> str:
     return '\n'.join(lines)
 
 
-def _render_plain_text(course: CourseScheme) -> str:
+def _render_plain_text(course: CourseScheme, *, assets_dir: Path | None = None) -> str:
     chunks: list[str] = []
 
     chunks.append(f'# {course.title}'.strip())
@@ -69,7 +69,7 @@ def _render_plain_text(course: CourseScheme) -> str:
             chunks.append('')
 
             for block in lesson.blocks:
-                rendered = block.render('md').strip()
+                rendered = block.render('md', assets_dir=assets_dir).strip()
                 if rendered:
                     chunks.append(rendered)
                     chunks.append('')
@@ -78,16 +78,24 @@ def _render_plain_text(course: CourseScheme) -> str:
 
 
 def write_course(course: CourseScheme, path: str | Path, *, output_format: str = 'md') -> None:
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
+    output_dir = Path(path)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    assets_dir = output_dir / 'assets'
 
     fmt = (output_format or '').lower().strip()
 
     if fmt not in {'md', 'markdown', 'pdf', 'txt', 'text', 'plain', ''}:
         raise ValueError(f'Unknown output_format: {output_format!r}')
 
-    content = _render_plain_text(course)
-    path.write_text(content, encoding='utf-8')
+    filename = f'{course.title}.{fmt or "md"}'
+    safe_filename = ''.join(
+        ch if ch.isalnum() or ch in {'.', '-', '_', ' '} else '_' for ch in filename
+    ).strip()
+    safe_filename = safe_filename.replace('  ', ' ').strip() or f'course.{fmt or "md"}'
+    output_file = output_dir / safe_filename
+
+    content = _render_plain_text(course, assets_dir=assets_dir)
+    output_file.write_text(content, encoding='utf-8')
 
     lessons_count = sum(len(s.lessons) for s in course.sections)
-    logger.info('Wrote %s lessons to %s', lessons_count, path)
+    logger.info('Wrote %s lessons to %s', lessons_count, output_file)

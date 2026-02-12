@@ -55,18 +55,15 @@ def run_setup_wizard() -> Config:
         default_id=current.output_format or 'md',
     )
 
-    default_output = f'./output/{course_name}.{output_format}'
-    output_path = _prompt('Output name or path', default_output)
+    default_output_dir = f'./output/{course_name}'
+    output_path = _prompt('Output folder', default_output_dir)
 
     if '/' not in output_path and '\\' not in output_path and not output_path.startswith('.'):
-        if not Path(output_path).suffix:
-            output_path = f'./output/{output_path}.{output_format}'
-        else:
-            output_path = f'./output/{output_path}'
+        output_path = f'./output/{output_path}'
 
     current.base_url = base_url
     current.course_name = course_name
     current.output_format = output_format
-    current.output_path = output_path or f'./output/{course_name}.{output_format}'
+    current.output_path = output_path or f'./output/{course_name}'
     print('\nConfig set for this run.\n')
     return current

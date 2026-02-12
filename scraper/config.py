@@ -14,7 +14,7 @@ class Config:
         self.viewport_height = DEFAULT_VIEWPORT_HEIGHT
         self.course_name = DEFAULT_COURSE_NAME
         self.output_format = DEFAULT_OUTPUT_FORMAT  # "md" | "pdf" | "txt"
-        self.output_path = f'./output/{self.course_name}.{self.output_format}'
+        self.output_path = f'./output/{self.course_name}'
 
 
 _CONFIG = Config()

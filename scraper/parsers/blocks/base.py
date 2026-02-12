@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from pathlib import Path
 from typing import ClassVar
 
 from playwright.sync_api import Locator
@@ -24,8 +25,7 @@ class LessonBlock(ABC):
         """Populate plain_text/markdown from the live locator."""
         raise NotImplementedError
 
-    @abstractmethod
-    def render(self, format: str = 'md') -> str:
+    def render(self, format: str = 'md', *, assets_dir: Path | None = None) -> str:
         fmt = (format or '').lower().strip()
         if fmt in {'md', 'markdown', ''}:
             return self.markdown

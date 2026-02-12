@@ -27,5 +27,5 @@ class TitleBlock(LessonBlock):
         self.plain_text = title
         self.markdown = f'{"#" * h} {title}'.strip()
 
-    def render(self, format: str = 'md') -> str:
-        return super().render(format)
+    def render(self, format: str = 'md', *, assets_dir=None) -> str:
+        return super().render(format, assets_dir=assets_dir)

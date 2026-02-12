@@ -4,7 +4,7 @@ from playwright.sync_api import Locator
 
 from scraper.parsers.blocks import (
     CodeBlock,
-    ImageWithButtonsBlock,
+    LabeledImageBlock,
     LessonBlock,
     TextBlock,
     TitleBlock,
@@ -17,7 +17,8 @@ class BlockParser:
         self.wrapper = wrapper
 
     def _identify_block(self) -> type[LessonBlock]:
-        for block_cls in (CodeBlock, TitleBlock, TextBlock, ImageWithButtonsBlock):
+        # Order matters
+        for block_cls in (CodeBlock, TitleBlock, LabeledImageBlock, TextBlock):
             selector = getattr(block_cls, 'query_selector', '') or ''
             if selector and self.wrapper.locator(selector).count():
                 return block_cls

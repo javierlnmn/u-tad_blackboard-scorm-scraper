@@ -5,7 +5,6 @@ import logging
 from playwright.sync_api import Frame, Page, TimeoutError
 
 from scraper.models.course_scheme import CourseSchemeLesson
-from scraper.models.lesson_content import LessonContent
 from scraper.parsers.blocks import LessonBlock
 from scraper.parsers.lesson import parse_lesson_content
 
@@ -31,7 +30,7 @@ def extract_lesson(
     sidebar_lesson_links_selector: str,
     lesson_content_selector: str,
     timeout_ms: int = 5000,
-) -> tuple[Frame, LessonContent]:
+) -> tuple[Frame, list[LessonBlock]]:
     logger.info('Parsing lesson %s/%s: %s', item.index + 1, total_items, item.title)
 
     link = scorm_frame.locator(sidebar_lesson_links_selector).nth(item.index)
@@ -54,7 +53,6 @@ def extract_lesson(
 
     lesson_el = scorm_frame.locator(lesson_content_selector).first
     parsed_blocks: list[LessonBlock] = parse_lesson_content(lesson_el)
-    lesson = LessonContent(label=item.title, blocks=parsed_blocks)
 
     logger.info('Scraped %s/%s: %s', item.index + 1, total_items, item.title)
-    return scorm_frame, lesson
+    return scorm_frame, parsed_blocks

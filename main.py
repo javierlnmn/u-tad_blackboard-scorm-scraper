@@ -37,8 +37,8 @@ def main() -> None:
         scorm_page.set_viewport_size({'width': settings.viewport_width, 'height': settings.viewport_height})
         scorm_page.wait_for_load_state()
 
-        lessons = extract_course(scorm_page)
-        write_course(lessons, settings.output_path, output_format=settings.output_format)
+        course = extract_course(scorm_page)
+        write_course(course, settings.output_path, output_format=settings.output_format)
 
 
 if __name__ == '__main__':

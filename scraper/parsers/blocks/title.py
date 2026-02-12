@@ -20,7 +20,9 @@ class TitleBlock(LessonBlock):
                 break
         text = heading.inner_text() if heading.count() else self.locator.inner_text()
         title = (text or '').strip()
-        h = min(max(level or 3, 1), 6)
+
+        source_level = level or 3
+        h = min(max(source_level + 1, 4), 6)
         self.level = level
         self.plain_text = title
         self.markdown = f'{"#" * h} {title}'.strip()

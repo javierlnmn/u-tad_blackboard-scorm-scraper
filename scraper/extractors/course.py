@@ -5,8 +5,7 @@ import logging
 from playwright.sync_api import Frame, Locator, Page
 
 from scraper.extractors.lesson import extract_lesson, find_frame_with_matching_element
-from scraper.models.course_scheme import CourseSchemeSection
-from scraper.models.lesson_content import LessonContent
+from scraper.models.course_scheme import CourseScheme, CourseSchemeSection
 from scraper.parsers.sidebar import SIDEBAR_LESSON_LINKS_SELECTOR, parse_sidebar
 
 logger = logging.getLogger(__name__)
@@ -32,7 +31,7 @@ def _get_course_scheme(scorm_frame: Locator) -> list[CourseSchemeSection]:
     return course_scheme
 
 
-def extract_course(scorm_page: Page) -> list[LessonContent]:
+def extract_course(scorm_page: Page) -> CourseScheme:
 
     scorm_frame: Frame | None = _frame_from_iframe(scorm_page, f'iframe{CONTENT_FRAME}')
 
@@ -55,7 +54,7 @@ def extract_course(scorm_page: Page) -> list[LessonContent]:
 
     if not course_scheme:
         logger.warning('No course scheme sections/lessons found.')
-        return []
+        return CourseScheme(title=(scorm_page.title() or 'Course').strip(), sections=[])
     else:
         total_items = sum(len(s.lessons) for s in course_scheme)
         logger.info(
@@ -64,19 +63,22 @@ def extract_course(scorm_page: Page) -> list[LessonContent]:
             total_items,
         )
 
-    lessons: list[LessonContent] = []
+    course_title = (scorm_page.title() or 'Course').strip()
 
-    lesson_refs = [lesson for section in course_scheme for lesson in section.lessons]
-    for lesson_ref in lesson_refs:
-        scorm_frame, lesson = extract_lesson(
-            scorm_page=scorm_page,
-            scorm_frame=scorm_frame,
-            item=lesson_ref,
-            total_items=len(lesson_refs),
-            sidebar_lesson_links_selector=SIDEBAR_LESSON_LINKS_SELECTOR,
-            lesson_content_selector=LESSON_CONTENT_SELECTOR,
-            timeout_ms=5000,
-        )
-        lessons.append(lesson)
+    flat_lessons = [lesson for section in course_scheme for lesson in section.lessons]
+    total_lessons = len(flat_lessons)
 
-    return lessons
+    for section in course_scheme:
+        for lesson_ref in section.lessons:
+            scorm_frame, blocks = extract_lesson(
+                scorm_page=scorm_page,
+                scorm_frame=scorm_frame,
+                item=lesson_ref,
+                total_items=total_lessons,
+                sidebar_lesson_links_selector=SIDEBAR_LESSON_LINKS_SELECTOR,
+                lesson_content_selector=LESSON_CONTENT_SELECTOR,
+                timeout_ms=5000,
+            )
+            lesson_ref.blocks = blocks
+
+    return CourseScheme(title=course_title, sections=course_scheme)

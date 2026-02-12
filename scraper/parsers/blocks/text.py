@@ -120,7 +120,21 @@ def _render_inline(node) -> str:
 
 
 def _render_inline_children(tag: Tag) -> str:
-    return ''.join(_render_inline(child) for child in tag.contents)
+    pieces = [_render_inline(child) for child in tag.contents]
+    out: list[str] = []
+
+    for piece in pieces:
+        if not piece:
+            continue
+
+        if out:
+            prev = out[-1]
+            if prev.endswith('**') and piece[:1] and not piece[:1].isspace() and piece[:1].isalnum():
+                out[-1] = prev + ' '
+
+        out.append(piece)
+
+    return ''.join(out)
 
 
 def _render_list(list_tag: Tag, *, indent: int = 0) -> list[str]:

@@ -4,6 +4,7 @@ import base64
 import logging
 from pathlib import Path
 from typing import Any
+from urllib.parse import urljoin
 
 logger = logging.getLogger(__name__)
 
@@ -23,24 +24,43 @@ def safe_filename(name: str) -> str:
 
 
 def download_via_fetch(locator: Any, url: str) -> bytes | None:
-    """Download a URL using the page context (cookies/session) via fetch().
+    """Download bytes using the authenticated browser context.
+
+    Fast path: use Playwright's `page.request` to avoid base64 roundtrips.
+    Fallback: `evaluate(fetch)` + base64 (handles relative URLs in-page).
 
     `locator` is any Playwright object that supports `.evaluate(js, arg)`.
     """
+
+    page = getattr(locator, 'page', None)
+    if page is not None and isinstance(url, str):
+        u = url.strip()
+        if u and not (u.startswith('data:') or u.startswith('blob:')):
+            try:
+                resolved = u
+                if not (resolved.startswith('http://') or resolved.startswith('https://')):
+                    resolved = urljoin(getattr(page, 'url', '') or '', resolved)
+                resp = page.request.get(resolved, timeout=30_000)
+                if getattr(resp, 'ok', False):
+                    return resp.body()
+            except Exception:
+                pass
+
     js = r"""
-async (el, url) => {
-  const res = await fetch(url);
-  if (!res.ok) return null;
-  const buf = await res.arrayBuffer();
-  const bytes = new Uint8Array(buf);
-  let binary = '';
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
-  }
-  return btoa(binary);
-}
-"""
+        async (el, url) => {
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        const buf = await res.arrayBuffer();
+        const bytes = new Uint8Array(buf);
+        let binary = '';
+        const chunk = 0x8000;
+        for (let i = 0; i < bytes.length; i += chunk) {
+            binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+        }
+        return btoa(binary);
+        }
+    """
+
     try:
         b64 = locator.evaluate(js, url)
     except Exception:
@@ -59,7 +79,7 @@ def ensure_asset(*, locator: Any, url: str, assets_dir: Path, filename: str) -> 
     target = assets_dir / filename
 
     if target.exists():
-        logger.info('Asset %s already exists', filename)
+        logger.info('Asset %s already exists, skipping download.', filename)
         return True
 
     logger.info('Downloading asset %s', filename)

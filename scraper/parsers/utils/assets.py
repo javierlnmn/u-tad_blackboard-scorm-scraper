@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import base64
+import logging
+from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 def safe_basename_from_url(url: str | None) -> str | None:
@@ -48,3 +52,22 @@ async (el, url) => {
     except Exception:
         return None
 
+
+def ensure_asset(*, locator: Any, url: str, assets_dir: Path, filename: str) -> bool:
+    """Download `url` into `assets_dir/filename` if missing. Logs progress."""
+    assets_dir.mkdir(parents=True, exist_ok=True)
+    target = assets_dir / filename
+
+    if target.exists():
+        logger.info('Asset %s already exists', filename)
+        return True
+
+    logger.info('Downloading asset %s', filename)
+    data = download_via_fetch(locator, url)
+    if not data:
+        logger.warning('Failed downloading asset %s', filename)
+        return False
+
+    target.write_bytes(data)
+    logger.info('Saved asset %s (%s bytes)', filename, len(data))
+    return True

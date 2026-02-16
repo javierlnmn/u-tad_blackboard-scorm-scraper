@@ -5,7 +5,7 @@ from pathlib import Path
 
 from scraper.parsers.blocks.base import LessonBlock
 from scraper.parsers.html_to_markdown import html_fragment_to_markdown
-from scraper.parsers.utils.assets import download_via_fetch, safe_basename_from_url, safe_filename
+from scraper.parsers.utils.assets import ensure_asset, safe_basename_from_url, safe_filename
 
 
 @dataclass()
@@ -61,12 +61,12 @@ class LabeledImageBlock(LessonBlock):
 
     def render(self, format: str = 'md', *, assets_dir: Path | None = None) -> str:
         if assets_dir and self.image_url and self.asset_filename:
-            assets_dir.mkdir(parents=True, exist_ok=True)
-            target = assets_dir / self.asset_filename
-            if not target.exists():
-                data = download_via_fetch(self.locator, self.image_url)
-                if data:
-                    target.write_bytes(data)
+            ensure_asset(
+                locator=self.locator,
+                url=self.image_url,
+                assets_dir=assets_dir,
+                filename=self.asset_filename,
+            )
 
         return super().render(format, assets_dir=assets_dir)
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 from playwright.sync_api import Locator
 
 from scraper.parsers.blocks import (
+    AccordionBlock,
     CodeBlock,
     FlashcardsBlock,
     ImageBlock,
@@ -24,6 +25,7 @@ class BlockParser:
         for block_cls in (
             CodeBlock,
             TitleBlock,
+            AccordionBlock,
             LabeledImageBlock,
             ImageBlock,
             FlashcardsBlock,

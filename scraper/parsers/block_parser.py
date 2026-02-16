@@ -8,6 +8,7 @@ from scraper.parsers.blocks import (
     ImageBlock,
     LabeledImageBlock,
     LessonBlock,
+    NumberedListBlock,
     TextBlock,
     TitleBlock,
     UnknownBlock,
@@ -20,7 +21,15 @@ class BlockParser:
 
     def _identify_block(self) -> type[LessonBlock]:
         # Order matters
-        for block_cls in (CodeBlock, TitleBlock, LabeledImageBlock, ImageBlock, FlashcardsBlock, TextBlock):
+        for block_cls in (
+            CodeBlock,
+            TitleBlock,
+            LabeledImageBlock,
+            ImageBlock,
+            FlashcardsBlock,
+            NumberedListBlock,
+            TextBlock,
+        ):
             selector = getattr(block_cls, 'query_selector', '') or ''
             if selector and self.wrapper.locator(selector).count():
                 return block_cls

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import base64
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from scraper.parsers.blocks.base import LessonBlock
 from scraper.parsers.html_to_markdown import html_fragment_to_markdown
+from scraper.parsers.utils.assets import download_via_fetch, safe_basename_from_url, safe_filename
 
 
 @dataclass()
@@ -26,9 +26,9 @@ class LabeledImageBlock(LessonBlock):
             except Exception:
                 self.image_url = img.get_attribute('src')
 
-            basename = _safe_basename_from_url(self.image_url) or 'image'
+            basename = safe_basename_from_url(self.image_url) or 'image'
             prefix = (self.block_id or 'block').strip()
-            self.asset_filename = _safe_filename(f'{prefix}-{basename}')
+            self.asset_filename = safe_filename(f'{prefix}-{basename}')
 
         items: list[tuple[str, str]] = []
         map_items = self.locator.locator('li.map-item')
@@ -64,25 +64,11 @@ class LabeledImageBlock(LessonBlock):
             assets_dir.mkdir(parents=True, exist_ok=True)
             target = assets_dir / self.asset_filename
             if not target.exists():
-                data = _download_via_fetch(self.locator, self.image_url)
+                data = download_via_fetch(self.locator, self.image_url)
                 if data:
                     target.write_bytes(data)
 
         return super().render(format, assets_dir=assets_dir)
-
-
-def _safe_basename_from_url(url: str | None) -> str | None:
-    if not url:
-        return None
-    base = url.split('?', 1)[0].split('#', 1)[0].rstrip('/').split('/')[-1]
-    return base or None
-
-
-def _safe_filename(name: str) -> str:
-    name = name.strip()
-    name = ''.join(ch if ch.isalnum() or ch in {'.', '-', '_'} else '_' for ch in name)
-    name = name.strip('._-') or 'asset'
-    return name
 
 
 def _render_md(*, asset_filename: str | None, image_alt: str, items: list[tuple[str, str]]) -> str:
@@ -99,30 +85,3 @@ def _render_md(*, asset_filename: str | None, image_alt: str, items: list[tuple[
                 lines.append(('  ' + ln) if ln.strip() else '')
 
     return '\n'.join(lines).strip()
-
-
-def _download_via_fetch(locator, url: str) -> bytes | None:
-    js = r"""
-async (el, url) => {
-  const res = await fetch(url);
-  if (!res.ok) return null;
-  const buf = await res.arrayBuffer();
-  const bytes = new Uint8Array(buf);
-  let binary = '';
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
-  }
-  return btoa(binary);
-}
-"""
-    try:
-        b64 = locator.evaluate(js, url)
-    except Exception:
-        return None
-    if not b64:
-        return None
-    try:
-        return base64.b64decode(b64)
-    except Exception:
-        return None

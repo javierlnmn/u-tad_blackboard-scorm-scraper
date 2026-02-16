@@ -16,7 +16,7 @@ class ImageBlock(LessonBlock):
     asset_filename: str | None = None
 
     def _scrape(self) -> None:
-        img = self.locator.locator('.block--image img').first
+        img = self.locator.locator(f'{self.query_selector} img').first
         if img.count():
             self.image_alt = (img.get_attribute('alt') or '').strip()
             try:

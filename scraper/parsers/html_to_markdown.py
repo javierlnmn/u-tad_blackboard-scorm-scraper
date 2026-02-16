@@ -133,7 +133,8 @@ def _render_list(list_tag: Tag, *, indent: int = 0) -> list[str]:
         for nested in li.find_all(['ul', 'ol'], recursive=False):
             items.extend(_render_list(nested, indent=indent + 1))
 
-    return items
+    # Return as a single block so `_join_blocks` doesn't insert blank lines between items.
+    return ['\n'.join(items).rstrip()] if items else []
 
 
 def _render_table(table: Tag) -> str:

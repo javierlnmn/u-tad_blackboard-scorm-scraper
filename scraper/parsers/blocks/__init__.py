@@ -1,5 +1,6 @@
 from scraper.parsers.blocks.accordion import AccordionBlock
 from scraper.parsers.blocks.base import LessonBlock
+from scraper.parsers.blocks.button import ButtonBlock
 from scraper.parsers.blocks.code import CodeBlock
 from scraper.parsers.blocks.flashcards import FlashcardsBlock
 from scraper.parsers.blocks.image import ImageBlock
@@ -14,6 +15,7 @@ __all__ = [
     'TitleBlock',
     'TextBlock',
     'CodeBlock',
+    'ButtonBlock',
     'AccordionBlock',
     'FlashcardsBlock',
     'ImageBlock',

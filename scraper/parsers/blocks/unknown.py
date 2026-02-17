@@ -9,10 +9,13 @@ from scraper.parsers.blocks.base import LessonBlock
 class UnknownBlock(LessonBlock):
     # No selector: this is only used as the fallback.
 
-    def _scrape(self) -> None:
-        plain = (self.locator.inner_text() or '').strip()
-        self.plain_text = plain
-        self.markdown = plain
+    text: str = ''
 
-    def render(self, format: str = 'md', *, assets_dir=None) -> str:
-        return super().render(format, assets_dir=assets_dir)
+    def _scrape(self) -> None:
+        self.text = (self.locator.inner_text() or '').strip()
+
+    def _render_md(self, *, assets_dir=None) -> str:
+        return self.text
+
+    def _render_txt(self, *, assets_dir=None) -> str:
+        return self.text

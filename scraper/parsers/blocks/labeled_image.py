@@ -15,7 +15,7 @@ class LabeledImageBlock(LessonBlock):
     image_url: str | None = None
     image_alt: str = ''
     asset_filename: str | None = None
-    items: list[tuple[str, str]] = field(default_factory=list)  # (title, md_description)
+    items: list[tuple[str, str]] = field(default_factory=list)  # (title, desc_html)
 
     def _scrape(self) -> None:
         img = self.locator.locator('img.labeled-graphic-canvas__image').first
@@ -42,24 +42,15 @@ class LabeledImageBlock(LessonBlock):
 
             desc_fr = li.locator('.bubble__description .fr-view').first
             desc_html = desc_fr.inner_html() if desc_fr.count() else ''
-            desc_md = html_fragment_to_markdown(desc_html).strip()
-            items.append((title, desc_md))
+            items.append((title, (desc_html or '').strip()))
 
         self.items = items
 
-        plain_titles = ', '.join(t for t, _ in items)
-        self.plain_text = plain_titles if plain_titles else (self.locator.text_content() or '').strip()
+        self.image_url = (self.image_url or '').strip() or None
+        self.asset_filename = (self.asset_filename or '').strip() or None
+        self.image_alt = (self.image_alt or '').strip()
 
-        self.markdown = (
-            _render_md(
-                asset_filename=self.asset_filename,
-                image_alt=self.image_alt,
-                items=self.items,
-            ).strip()
-            or self.plain_text
-        )
-
-    def render(self, format: str = 'md', *, assets_dir: Path | None = None) -> str:
+    def _render_md(self, *, assets_dir: Path | None = None) -> str:
         if assets_dir and self.image_url and self.asset_filename:
             ensure_asset(
                 locator=self.locator,
@@ -68,20 +59,32 @@ class LabeledImageBlock(LessonBlock):
                 filename=self.asset_filename,
             )
 
-        return super().render(format, assets_dir=assets_dir)
+        lines: list[str] = []
+        if self.asset_filename:
+            alt = self.image_alt or 'image'
+            lines.append(f'![{alt}](assets/{self.asset_filename})')
+            lines.append('')
 
+        for title, desc_html in self.items:
+            desc_md = html_fragment_to_markdown(desc_html or '').strip()
+            lines.append(f'- **{title}**  ')
+            if desc_md:
+                for ln in desc_md.splitlines():
+                    lines.append(('  ' + ln) if ln.strip() else '')
 
-def _render_md(*, asset_filename: str | None, image_alt: str, items: list[tuple[str, str]]) -> str:
-    lines: list[str] = []
-    if asset_filename:
-        alt = image_alt or 'image'
-        lines.append(f'![{alt}](assets/{asset_filename})')
-        lines.append('')
+        out = '\n'.join(lines).strip()
+        return out if out else (self.locator.text_content() or '').strip()
 
-    for title, desc in items:
-        lines.append(f'- **{title}**  ')
-        if desc:
-            for ln in desc.splitlines():
-                lines.append(('  ' + ln) if ln.strip() else '')
-
-    return '\n'.join(lines).strip()
+    def _render_txt(self, *, assets_dir: Path | None = None) -> str:
+        parts: list[str] = []
+        if self.image_alt:
+            parts.append(self.image_alt.strip())
+        if self.image_url:
+            parts.append(self.image_url)
+        for title, desc_html in self.items:
+            desc_txt = html_fragment_to_markdown(desc_html or '').strip()
+            chunk = title
+            if desc_txt:
+                chunk = f'{chunk}\n{desc_txt}'.strip()
+            parts.append(chunk)
+        return '\n\n'.join(p for p in parts if p.strip()).strip()

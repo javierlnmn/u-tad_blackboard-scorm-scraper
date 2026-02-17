@@ -10,6 +10,7 @@ class TitleBlock(LessonBlock):
     query_selector = '.block-text__heading'
 
     level: int | None = None
+    title: str = ''
 
     def _scrape(self) -> None:
         heading = self.locator.locator('.block-text__heading').first
@@ -19,13 +20,13 @@ class TitleBlock(LessonBlock):
                 level = i
                 break
         text = heading.inner_text() if heading.count() else self.locator.inner_text()
-        title = (text or '').strip()
-
-        source_level = level or 3
-        h = min(max(source_level + 1, 4), 6)
+        self.title = (text or '').strip()
         self.level = level
-        self.plain_text = title
-        self.markdown = f'{"#" * h} {title}'.strip()
 
-    def render(self, format: str = 'md', *, assets_dir=None) -> str:
-        return super().render(format, assets_dir=assets_dir)
+    def _render_md(self, *, assets_dir=None) -> str:
+        source_level = self.level or 3
+        h = min(max(source_level + 1, 4), 6)
+        return f'{"#" * h} {self.title}'.strip()
+
+    def _render_txt(self, *, assets_dir=None) -> str:
+        return self.title

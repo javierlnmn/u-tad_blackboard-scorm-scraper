@@ -10,7 +10,7 @@ from scraper.parsers.html_to_markdown import html_fragment_to_markdown
 class FlashcardsBlock(LessonBlock):
     query_selector = '.block-flashcards'
 
-    cards: list[tuple[str, str]] = field(default_factory=list)  # (front_title, back_md)
+    cards: list[tuple[str, str]] = field(default_factory=list)  # (front_title, back_html)
 
     def _scrape(self) -> None:
         cards: list[tuple[str, str]] = []
@@ -27,28 +27,32 @@ class FlashcardsBlock(LessonBlock):
 
             back_fr = li.locator('.flashcard-side--back .fr-view').first
             back_html = back_fr.inner_html() if back_fr.count() else ''
-            back_md = html_fragment_to_markdown(back_html).strip()
-            if not back_md and back_fr.count():
-                back_md = (back_fr.text_content() or '').strip()
-
-            cards.append((front_text, back_md))
+            cards.append((front_text, (back_html or '').strip()))
 
         self.cards = cards
-        self.plain_text = (
-            ', '.join(title for title, _ in cards) if cards else (self.locator.text_content() or '').strip()
-        )
-        self.markdown = _render_flashcards_md(cards)
 
-    def render(self, format: str = 'md', *, assets_dir=None) -> str:
-        return super().render(format, assets_dir=assets_dir)
+    def _render_md(self, *, assets_dir=None) -> str:
+        if not self.cards:
+            return (self.locator.text_content() or '').strip()
 
+        lines: list[str] = []
+        for title, back_html in self.cards:
+            back_md = html_fragment_to_markdown(back_html or '').strip()
+            lines.append(f'- **{title}**  ')
+            if back_md:
+                for ln in back_md.splitlines():
+                    lines.append(('  ' + ln) if ln.strip() else '')
+        return '\n'.join(lines).strip()
 
-def _render_flashcards_md(cards: list[tuple[str, str]]) -> str:
-    lines: list[str] = []
-    for title, desc in cards:
-        # Hard break after title so it renders on next line inside list items
-        lines.append(f'- **{title}**  ')
-        if desc:
-            for ln in desc.splitlines():
-                lines.append(('  ' + ln) if ln.strip() else '')
-    return '\n'.join(lines).strip()
+    def _render_txt(self, *, assets_dir=None) -> str:
+        if not self.cards:
+            return (self.locator.text_content() or '').strip()
+
+        parts: list[str] = []
+        for title, back_html in self.cards:
+            back = html_fragment_to_markdown(back_html or '').strip()
+            chunk = title
+            if back:
+                chunk = f'{chunk}\n{back}'.strip()
+            parts.append(chunk)
+        return '\n\n'.join(parts).strip()

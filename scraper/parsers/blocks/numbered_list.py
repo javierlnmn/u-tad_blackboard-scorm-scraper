@@ -10,10 +10,10 @@ from scraper.parsers.html_to_markdown import html_fragment_to_markdown
 class NumberedListBlock(LessonBlock):
     query_selector = '.block-list.block-list--numbered'
 
-    items: list[str] = field(default_factory=list)
+    items: list[tuple[str, str]] = field(default_factory=list)  # (num, item_html)
 
     def _scrape(self) -> None:
-        items: list[str] = []
+        items: list[tuple[str, str]] = []
 
         lis = self.locator.locator('ol.block-list__list > li.block-list__item--numbered')
         if not lis.count():
@@ -29,18 +29,31 @@ class NumberedListBlock(LessonBlock):
 
             fr = li.locator('.block-list__content .fr-view').first
             html = fr.inner_html() if fr.count() else ''
-            md = html_fragment_to_markdown(html).strip()
-            if not md:
-                md = (li.text_content() or '').strip()
-
-            items.append(_render_numbered_item(num, md))
+            items.append((num, (html or '').strip()))
 
         self.items = items
-        self.markdown = '\n'.join(items).strip()
-        self.plain_text = '\n'.join(i for i in items if i.strip()).strip()
 
-    def render(self, format: str = 'md', *, assets_dir=None) -> str:
-        return super().render(format, assets_dir=assets_dir)
+    def _render_md(self, *, assets_dir=None) -> str:
+        if not self.items:
+            return (self.locator.text_content() or '').strip()
+
+        rendered: list[str] = []
+        for num, item_html in self.items:
+            md = html_fragment_to_markdown(item_html or '').strip()
+            if not md:
+                md = ''
+            rendered.append(_render_numbered_item(num, md))
+        return '\n'.join(r for r in rendered if r.strip()).strip()
+
+    def _render_txt(self, *, assets_dir=None) -> str:
+        if not self.items:
+            return (self.locator.text_content() or '').strip()
+
+        rendered: list[str] = []
+        for num, item_html in self.items:
+            md = html_fragment_to_markdown(item_html or '').strip()
+            rendered.append(f'{num}. {md}'.strip())
+        return '\n'.join(r for r in rendered if r.strip()).strip()
 
 
 def _render_numbered_item(num: str, md: str) -> str:

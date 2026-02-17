@@ -10,7 +10,7 @@ from scraper.parsers.html_to_markdown import html_fragment_to_markdown
 class AccordionBlock(LessonBlock):
     query_selector = '.blocks-accordion'
 
-    items: list[tuple[str, str]] = field(default_factory=list)  # (title, md_body)
+    items: list[tuple[str, str]] = field(default_factory=list)  # (title, body_html)
 
     def _scrape(self) -> None:
         items: list[tuple[str, str]] = []
@@ -27,27 +27,35 @@ class AccordionBlock(LessonBlock):
 
             desc_fr = item.locator('.blocks-accordion__description .fr-view').first
             desc_html = desc_fr.inner_html() if desc_fr.count() else ''
-            desc_md = html_fragment_to_markdown(desc_html).strip()
-            if not desc_md and desc_fr.count():
-                desc_md = (desc_fr.text_content() or '').strip()
-
-            items.append((title, desc_md))
+            items.append((title, (desc_html or '').strip()))
 
         self.items = items
-        self.plain_text = (
-            ', '.join(t for t, _ in items) if items else (self.locator.text_content() or '').strip()
-        )
-        self.markdown = _render_accordion_md(items)
 
-    def render(self, format: str = 'md', *, assets_dir=None) -> str:
-        return super().render(format, assets_dir=assets_dir)
+    def _render_md(self, *, assets_dir=None) -> str:
+        if not self.items:
+            return (self.locator.text_content() or '').strip()
 
+        lines: list[str] = []
+        for title, body_html in self.items:
+            body_md = html_fragment_to_markdown(body_html or '').strip()
+            if not body_md:
+                body_md = ''
 
-def _render_accordion_md(items: list[tuple[str, str]]) -> str:
-    lines: list[str] = []
-    for title, body in items:
-        lines.append(f'- **{title}**  ')
-        if body:
-            for ln in body.splitlines():
-                lines.append(('  ' + ln) if ln.strip() else '')
-    return '\n'.join(lines).strip()
+            lines.append(f'- **{title}**  ')
+            if body_md:
+                for ln in body_md.splitlines():
+                    lines.append(('  ' + ln) if ln.strip() else '')
+        return '\n'.join(lines).strip()
+
+    def _render_txt(self, *, assets_dir=None) -> str:
+        if not self.items:
+            return (self.locator.text_content() or '').strip()
+
+        parts: list[str] = []
+        for title, body_html in self.items:
+            body = html_fragment_to_markdown(body_html or '').strip()
+            chunk = title
+            if body:
+                chunk = f'{chunk}\n{body}'.strip()
+            parts.append(chunk)
+        return '\n\n'.join(parts).strip()

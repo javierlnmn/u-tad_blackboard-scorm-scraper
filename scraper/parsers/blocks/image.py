@@ -28,18 +28,12 @@ class ImageBlock(LessonBlock):
             prefix = (self.block_id or 'block').strip()
             self.asset_filename = safe_filename(f'{prefix}-{basename}')
 
-        # Render markdown (download happens in render()).
-        if self.asset_filename:
-            alt = self.image_alt or 'image'
-            self.markdown = f'![{alt}](assets/{self.asset_filename})'
-            self.plain_text = alt
-        else:
-            plain = (self.locator.text_content() or '').strip()
-            self.plain_text = plain
-            self.markdown = plain
+        self.image_url = (self.image_url or '').strip() or None
+        self.asset_filename = (self.asset_filename or '').strip() or None
+        self.image_alt = (self.image_alt or '').strip()
 
-    def render(self, format: str = 'md', *, assets_dir: Path | None = None) -> str:
-        if assets_dir and self.image_url and self.asset_filename:
+    def _render_md(self, *, assets_dir: Path | None = None) -> str:
+        if self.image_url and self.asset_filename and assets_dir:
             ensure_asset(
                 locator=self.locator,
                 url=self.image_url,
@@ -47,4 +41,14 @@ class ImageBlock(LessonBlock):
                 filename=self.asset_filename,
             )
 
-        return super().render(format, assets_dir=assets_dir)
+        if self.asset_filename:
+            alt = self.image_alt or 'image'
+            return f'![{alt}](assets/{self.asset_filename})'
+
+        return (self.locator.text_content() or '').strip()
+
+    def _render_txt(self, *, assets_dir: Path | None = None) -> str:
+        alt = (self.image_alt or 'image').strip()
+        if self.image_url:
+            return f'{alt}\n{self.image_url}'.strip()
+        return alt

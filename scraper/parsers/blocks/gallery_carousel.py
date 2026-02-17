@@ -41,19 +41,18 @@ class GalleryCarouselBlock(LessonBlock):
 
         self.images = images
 
-        if not images:
-            plain = (self.locator.text_content() or '').strip()
-            self.plain_text = plain
-            self.markdown = plain
-            return
+    def _render_md(self, *, assets_dir: Path | None = None) -> str:
+        if not self.images:
+            return (self.locator.text_content() or '').strip()
 
-        self.plain_text = '\n'.join(alt for _, alt, _ in images).strip()
-        self.markdown = '\n\n'.join(f'![{alt}](assets/{filename})' for filename, alt, _ in images).strip()
-
-    def render(self, format: str = 'md', *, assets_dir: Path | None = None) -> str:
-        if assets_dir and self.images:
+        if assets_dir:
             for filename, _alt, url in self.images:
                 ensure_asset(locator=self.locator, url=url, assets_dir=assets_dir, filename=filename)
 
-        return super().render(format, assets_dir=assets_dir)
+        return '\n\n'.join(f'![{alt}](assets/{filename})' for filename, alt, _ in self.images).strip()
 
+    def _render_txt(self, *, assets_dir: Path | None = None) -> str:
+        if not self.images:
+            return (self.locator.text_content() or '').strip()
+
+        return '\n'.join(url for _filename, _alt, url in self.images if url).strip()

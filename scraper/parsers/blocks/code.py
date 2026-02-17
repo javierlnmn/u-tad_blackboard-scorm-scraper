@@ -48,11 +48,14 @@ def _md_lang_tag(language_name: str | None) -> str | None:
 class CodeBlock(LessonBlock):
     query_selector = 'pre.block-text__code, .block-text--code'
 
+    code: str = ''
+    lang: str | None = None
+
     def _scrape(self) -> None:
         pre = self.locator.locator('pre.block-text__code').first
         code = pre.inner_text() if pre.count() else self.locator.inner_text()
         code = (code or '').rstrip('\n')
-        self.plain_text = code
+        self.code = code
 
         lang: str | None = None
         if code.strip():
@@ -61,8 +64,11 @@ class CodeBlock(LessonBlock):
             except Exception:
                 lang = None
 
-        fence = f'```{lang}' if lang else '```'
-        self.markdown = f'{fence}\n{code}\n```'
+        self.lang = lang
 
-    def render(self, format: str = 'md', *, assets_dir=None) -> str:
-        return super().render(format, assets_dir=assets_dir)
+    def _render_md(self, *, assets_dir=None) -> str:
+        fence = f'```{self.lang}' if self.lang else '```'
+        return f'{fence}\n{self.code}\n```'
+
+    def _render_txt(self, *, assets_dir=None) -> str:
+        return self.code

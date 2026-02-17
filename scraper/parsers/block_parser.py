@@ -14,6 +14,7 @@ from scraper.parsers.blocks import (
     LessonBlock,
     NumberedListBlock,
     SlideshowBlock,
+    TabsBlock,
     TextBlock,
     TitleBlock,
     UnknownBlock,
@@ -38,6 +39,7 @@ class BlockParser:
             FlashcardsBlock,
             NumberedListBlock,
             SlideshowBlock,
+            TabsBlock,
             TextBlock,
         ):
             selector = getattr(block_cls, 'query_selector', '') or ''

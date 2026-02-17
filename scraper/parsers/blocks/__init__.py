@@ -13,6 +13,7 @@ from scraper.parsers.blocks.tabs import TabsBlock
 from scraper.parsers.blocks.text import TextBlock
 from scraper.parsers.blocks.title import TitleBlock
 from scraper.parsers.blocks.unknown import UnknownBlock
+from scraper.parsers.blocks.video import VideoBlock
 
 __all__ = [
     'LessonBlock',
@@ -29,5 +30,6 @@ __all__ = [
     'NumberedListBlock',
     'SlideshowBlock',
     'TabsBlock',
+    'VideoBlock',
     'UnknownBlock',
 ]

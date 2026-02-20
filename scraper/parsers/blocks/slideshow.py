@@ -114,15 +114,3 @@ class SlideshowBlock(LessonBlock):
 
         out = '\n'.join(lines).strip()
         return out if out else (self.locator.text_content() or '').strip()
-
-    def _render_txt(self, *, assets_dir: Path | None = None) -> str:
-        parts: list[str] = []
-        if self.intro_title:
-            parts.append(self.intro_title.strip())
-        intro = Markdown.html(self.intro_body_html) or self.intro_body_text
-        if intro:
-            parts.append(intro.strip())
-        for step_num, body_html, body_text, _asset_filename, _alt in self.steps:
-            body = Markdown.html(body_html) or body_text
-            parts.append(f'{step_num}. {body}'.strip())
-        return '\n\n'.join(p for p in parts if p.strip()).strip()

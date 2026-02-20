@@ -40,16 +40,3 @@ class AccordionBlock(LessonBlock):
             body_md = Markdown.html(body_html) or ''
             lines.append(Markdown.bullet_item(title, body_md))
         return '\n'.join(lines).strip()
-
-    def _render_txt(self, *, assets_dir=None) -> str:
-        if not self.items:
-            return (self.locator.text_content() or '').strip()
-
-        parts: list[str] = []
-        for title, body_html in self.items:
-            body = Markdown.html(body_html)
-            chunk = title
-            if body:
-                chunk = f'{chunk}\n{body}'.strip()
-            parts.append(chunk)
-        return '\n\n'.join(parts).strip()

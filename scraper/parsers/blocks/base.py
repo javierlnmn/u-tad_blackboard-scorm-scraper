@@ -7,6 +7,8 @@ from typing import ClassVar
 
 from playwright.sync_api import Locator
 
+from scraper.config import OutputFormat
+
 
 @dataclass
 class LessonBlock(ABC):
@@ -28,17 +30,8 @@ class LessonBlock(ABC):
         """Render this block as Markdown."""
         raise NotImplementedError
 
-    def _render_txt(self, *, assets_dir: Path | None = None) -> str:
-        """Render this block as plain text (default: markdown)."""
-        return self._render_md(assets_dir=assets_dir)
-
-    def render(self, format: str = 'md', *, assets_dir: Path | None = None) -> str:
-        fmt = (format or '').lower().strip()
-        fmt = {'markdown': 'md', 'text': 'txt'}.get(fmt, fmt)
-        if not fmt:
-            fmt = 'md'
-
-        render_fn = getattr(self, f'_render_{fmt}', None)
+    def render(self, fmt: OutputFormat = OutputFormat.MD, *, assets_dir: Path | None = None) -> str:
+        render_fn = getattr(self, f'_render_{fmt.extension}', None)
         if not callable(render_fn):
             render_fn = self._render_md
 

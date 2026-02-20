@@ -28,6 +28,3 @@ class TextBlock(LessonBlock):
     def _render_md(self, *, assets_dir=None) -> str:
         md = Markdown.html(self.html)
         return md if md else (self.text or '')
-
-    def _render_txt(self, *, assets_dir=None) -> str:
-        return self.text or ''

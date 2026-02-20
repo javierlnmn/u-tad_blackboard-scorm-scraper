@@ -90,17 +90,3 @@ class TabsBlock(LessonBlock):
                 lines.append(f'  {Markdown.image(alt, f"assets/{filename}")}')
 
         return '\n'.join(lines).strip()
-
-    def _render_txt(self, *, assets_dir: Path | None = None) -> str:
-        if not self.tabs:
-            return (self.locator.text_content() or '').strip()
-
-        parts: list[str] = []
-        for i, (title, body_html, body_text) in enumerate(self.tabs):
-            title_str = title.strip() or f'Tab {i + 1}'
-            body = Markdown.html(body_html) or body_text
-            chunk = title_str
-            if body:
-                chunk = f'{chunk}\n{body}'.strip()
-            parts.append(chunk)
-        return '\n\n'.join(parts).strip()

@@ -47,9 +47,3 @@ class ImageBlock(LessonBlock):
             return Markdown.image(alt, f'assets/{self.asset_filename}')
 
         return (self.locator.text_content() or '').strip()
-
-    def _render_txt(self, *, assets_dir: Path | None = None) -> str:
-        alt = (self.image_alt or 'image').strip()
-        if self.image_url:
-            return f'{alt}\n{self.image_url}'.strip()
-        return alt

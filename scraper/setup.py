@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from scraper.config import Config, get_config
+from scraper.config import Config, OutputFormat, get_config
 
 
 def _prompt(text: str, default: str) -> str:
@@ -44,15 +44,14 @@ def run_setup_wizard() -> Config:
     course_name = _normalize_course_name(_prompt('Course name', current.course_name))
     base_url = _prompt('Blackboard URL', current.base_url)
 
-    output_format = _prompt_menu(
+    output_format_raw = _prompt_menu(
         'Output format:',
-        options=[
-            ('md', 'Markdown (.md)'),
-            ('pdf', 'PDF (.pdf)'),
-            ('txt', 'Plain text (.txt)'),
-        ],
-        default_id=current.output_format or 'md',
+        options=[(f.extension, f'{f.value[1]} (.{f.extension})') for f in OutputFormat],
+        default_id=current.output_format.extension
+        if isinstance(current.output_format, OutputFormat)
+        else (current.output_format or OutputFormat.MD.extension),
     )
+    output_format = OutputFormat.from_extension(output_format_raw)
 
     default_output_dir = f'./output/{course_name}'
     output_path = _prompt('Output folder', default_output_dir)

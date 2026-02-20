@@ -40,16 +40,3 @@ class FlashcardsBlock(LessonBlock):
             back_md = Markdown.html(back_html)
             lines.append(Markdown.bullet_item(title, back_md))
         return '\n'.join(lines).strip()
-
-    def _render_txt(self, *, assets_dir=None) -> str:
-        if not self.cards:
-            return (self.locator.text_content() or '').strip()
-
-        parts: list[str] = []
-        for title, back_html in self.cards:
-            back = Markdown.html(back_html)
-            chunk = title
-            if back:
-                chunk = f'{chunk}\n{back}'.strip()
-            parts.append(chunk)
-        return '\n\n'.join(parts).strip()

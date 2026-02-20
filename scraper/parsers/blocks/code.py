@@ -69,6 +69,3 @@ class CodeBlock(LessonBlock):
 
     def _render_md(self, *, assets_dir=None) -> str:
         return Markdown.code_block(self.code, self.lang)
-
-    def _render_txt(self, *, assets_dir=None) -> str:
-        return self.code

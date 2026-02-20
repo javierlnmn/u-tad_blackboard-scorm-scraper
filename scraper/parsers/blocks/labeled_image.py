@@ -71,17 +71,3 @@ class LabeledImageBlock(LessonBlock):
 
         out = '\n'.join(lines).strip()
         return out if out else (self.locator.text_content() or '').strip()
-
-    def _render_txt(self, *, assets_dir: Path | None = None) -> str:
-        parts: list[str] = []
-        if self.image_alt:
-            parts.append(self.image_alt.strip())
-        if self.image_url:
-            parts.append(self.image_url)
-        for title, desc_html in self.items:
-            desc_txt = Markdown.html(desc_html)
-            chunk = title
-            if desc_txt:
-                chunk = f'{chunk}\n{desc_txt}'.strip()
-            parts.append(chunk)
-        return '\n\n'.join(p for p in parts if p.strip()).strip()

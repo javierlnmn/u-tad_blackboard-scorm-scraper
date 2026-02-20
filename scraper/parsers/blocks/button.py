@@ -33,11 +33,3 @@ class ButtonBlock(LessonBlock):
         desc_md = Markdown.html(self.description_html)
         body = desc_md or (self.description_text or '')
         return Markdown.link_callout(body, self.href)
-
-    def _render_txt(self, *, assets_dir=None) -> str:
-        body = (self.description_text or '').strip()
-        if self.href:
-            if body:
-                return f'{body}\n{self.href}'.strip()
-            return self.href
-        return body

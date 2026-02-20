@@ -9,8 +9,6 @@ from scraper.utils.assets import ensure_asset, safe_basename_from_url, safe_file
 
 @dataclass
 class GalleryCarouselBlock(LessonBlock):
-    """Image carousel rendered as a simple vertical image list."""
-
     query_selector = '.block-gallery-carousel'
 
     images: list[tuple[str, str, str]] = field(default_factory=list)
@@ -50,9 +48,3 @@ class GalleryCarouselBlock(LessonBlock):
                 ensure_asset(locator=self.locator, url=url, assets_dir=assets_dir, filename=filename)
 
         return '\n\n'.join(f'![{alt}](assets/{filename})' for filename, alt, _ in self.images).strip()
-
-    def _render_txt(self, *, assets_dir: Path | None = None) -> str:
-        if not self.images:
-            return (self.locator.text_content() or '').strip()
-
-        return '\n'.join(url for _filename, _alt, url in self.images if url).strip()

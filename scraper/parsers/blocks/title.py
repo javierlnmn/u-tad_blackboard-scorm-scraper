@@ -28,6 +28,3 @@ class TitleBlock(LessonBlock):
         source_level = self.level or 3
         h = min(max(source_level + 1, 4), 6)
         return Markdown.heading(h, self.title)
-
-    def _render_txt(self, *, assets_dir=None) -> str:
-        return self.title

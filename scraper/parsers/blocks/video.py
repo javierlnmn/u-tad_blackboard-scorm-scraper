@@ -53,12 +53,10 @@ class VideoBlock(LessonBlock):
             base = safe_basename_from_url(self.poster_url) or 'poster.jpg'
             self.poster_asset_filename = safe_filename(f'{prefix}-{base}')
 
-    def _render_video_unavailable(self, *, plain: bool = False) -> str:
+    def _render_video_unavailable(self) -> str:
         msg = 'Video is not available in this output.'
         if self.video_url:
             msg = f'{msg} Source: {self.video_url}'
-        if plain:
-            return msg
         return '\n'.join([f'> {line}'.rstrip() for line in msg.splitlines()]).strip()
 
     def _render_md(self, *, assets_dir: Path | None = None) -> str:
@@ -89,6 +87,3 @@ class VideoBlock(LessonBlock):
             f'<video controls preload="metadata" src="assets/{self.video_asset_filename}"{poster_attr}>'
             f'</video>'
         ).strip()
-
-    def _render_txt(self, *, assets_dir: Path | None = None) -> str:
-        return self._render_video_unavailable(plain=True)

@@ -42,13 +42,3 @@ class NumberedListBlock(LessonBlock):
             md = Markdown.html(item_html) or ''
             rendered.append(Markdown.numbered_item(num, md))
         return '\n'.join(r for r in rendered if r.strip()).strip()
-
-    def _render_txt(self, *, assets_dir=None) -> str:
-        if not self.items:
-            return (self.locator.text_content() or '').strip()
-
-        rendered: list[str] = []
-        for num, item_html in self.items:
-            md = Markdown.html(item_html)
-            rendered.append(f'{num}. {md}'.strip())
-        return '\n'.join(r for r in rendered if r.strip()).strip()

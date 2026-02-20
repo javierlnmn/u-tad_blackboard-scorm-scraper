@@ -43,17 +43,3 @@ class ButtonStackBlock(LessonBlock):
             desc_md = Markdown.html(desc_html)
             callouts.append(Markdown.link_callout(desc_md, href))
         return '\n\n'.join(c for c in callouts if c.strip()).strip()
-
-    def _render_txt(self, *, assets_dir=None) -> str:
-        if not self.entries:
-            return (self.locator.text_content() or '').strip()
-
-        parts: list[str] = []
-        for desc_html, href in self.entries:
-            desc_txt = Markdown.html(desc_html)
-            chunk = desc_txt
-            if href:
-                chunk = f'{chunk}\n{href}'.strip() if chunk else href
-            if chunk:
-                parts.append(chunk)
-        return '\n\n'.join(parts).strip()

@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from scraper.formats.md import Markdown
 from scraper.parsers.blocks.base import LessonBlock
 from scraper.utils.assets import ensure_asset, safe_basename_from_url, safe_filename
 
@@ -43,7 +44,7 @@ class ImageBlock(LessonBlock):
 
         if self.asset_filename:
             alt = self.image_alt or 'image'
-            return f'![{alt}](assets/{self.asset_filename})'
+            return Markdown.image(alt, f'assets/{self.asset_filename}')
 
         return (self.locator.text_content() or '').strip()
 

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from scraper.formats.md import Markdown
 from scraper.parsers.blocks.base import LessonBlock
-from scraper.utils.html_to_markdown import html_fragment_to_markdown
 
 
 @dataclass
@@ -37,11 +37,8 @@ class FlashcardsBlock(LessonBlock):
 
         lines: list[str] = []
         for title, back_html in self.cards:
-            back_md = html_fragment_to_markdown(back_html or '').strip()
-            lines.append(f'- **{title}**  ')
-            if back_md:
-                for ln in back_md.splitlines():
-                    lines.append(('  ' + ln) if ln.strip() else '')
+            back_md = Markdown.html(back_html)
+            lines.append(Markdown.bullet_item(title, back_md))
         return '\n'.join(lines).strip()
 
     def _render_txt(self, *, assets_dir=None) -> str:
@@ -50,7 +47,7 @@ class FlashcardsBlock(LessonBlock):
 
         parts: list[str] = []
         for title, back_html in self.cards:
-            back = html_fragment_to_markdown(back_html or '').strip()
+            back = Markdown.html(back_html)
             chunk = title
             if back:
                 chunk = f'{chunk}\n{back}'.strip()

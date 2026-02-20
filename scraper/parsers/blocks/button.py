@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from scraper.formats.md import Markdown
 from scraper.parsers.blocks.base import LessonBlock
-from scraper.utils.html_to_markdown import html_fragment_to_markdown
-from scraper.utils.md import render_link_callout
 
 
 @dataclass
@@ -31,10 +30,9 @@ class ButtonBlock(LessonBlock):
         ).strip()
 
     def _render_md(self, *, assets_dir=None) -> str:
-        desc_md = html_fragment_to_markdown(self.description_html or '').strip()
+        desc_md = Markdown.html(self.description_html)
         body = desc_md or (self.description_text or '')
-
-        return render_link_callout(body, self.href)
+        return Markdown.link_callout(body, self.href)
 
     def _render_txt(self, *, assets_dir=None) -> str:
         body = (self.description_text or '').strip()

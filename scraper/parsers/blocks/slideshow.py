@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from scraper.formats.md import Markdown
 from scraper.parsers.blocks.base import LessonBlock
-from scraper.utils.html_to_markdown import html_fragment_to_markdown
 from scraper.utils.assets import ensure_asset, safe_basename_from_url, safe_filename
 
 
@@ -91,13 +91,11 @@ class SlideshowBlock(LessonBlock):
             for filename, url in self.image_url_by_filename.items():
                 ensure_asset(locator=self.locator, url=url, assets_dir=assets_dir, filename=filename)
 
-        intro_md = html_fragment_to_markdown(self.intro_body_html or '').strip()
-        if not intro_md:
-            intro_md = self.intro_body_text or ''
+        intro_md = Markdown.html(self.intro_body_html) or self.intro_body_text or ''
 
         lines: list[str] = []
         if self.intro_title:
-            lines.append(f'#### {self.intro_title}'.strip())
+            lines.append(Markdown.heading(4, self.intro_title))
             if intro_md:
                 lines.append(intro_md.strip())
             lines.append('')
@@ -106,24 +104,13 @@ class SlideshowBlock(LessonBlock):
             lines.append('')
 
         for step_num, body_html, body_text, asset_filename, alt in self.steps:
-            body_md = html_fragment_to_markdown(body_html or '').strip()
-            if not body_md:
-                body_md = body_text or ''
+            body_md = Markdown.html(body_html) or body_text or ''
 
-            first_line = f'{step_num}.'
             if asset_filename:
-                lines.append(f'{first_line} ![{alt or "image"}](assets/{asset_filename})')
-                if body_md:
-                    for ln in body_md.splitlines():
-                        lines.append(('   ' + ln) if ln.strip() else '')
+                img = Markdown.image(alt or 'image', f'assets/{asset_filename}')
+                lines.append(Markdown.numbered_item(step_num, f'{img}\n{body_md}' if body_md else img))
             else:
-                body_lines = body_md.splitlines() if body_md else []
-                if body_lines:
-                    lines.append(f'{first_line} {body_lines[0]}'.rstrip())
-                    for ln in body_lines[1:]:
-                        lines.append(('   ' + ln) if ln.strip() else '')
-                else:
-                    lines.append(first_line)
+                lines.append(Markdown.numbered_item(step_num, body_md))
 
         out = '\n'.join(lines).strip()
         return out if out else (self.locator.text_content() or '').strip()
@@ -132,10 +119,10 @@ class SlideshowBlock(LessonBlock):
         parts: list[str] = []
         if self.intro_title:
             parts.append(self.intro_title.strip())
-        intro = html_fragment_to_markdown(self.intro_body_html or '').strip() or self.intro_body_text
+        intro = Markdown.html(self.intro_body_html) or self.intro_body_text
         if intro:
             parts.append(intro.strip())
         for step_num, body_html, body_text, _asset_filename, _alt in self.steps:
-            body = html_fragment_to_markdown(body_html or '').strip() or body_text
+            body = Markdown.html(body_html) or body_text
             parts.append(f'{step_num}. {body}'.strip())
         return '\n\n'.join(p for p in parts if p.strip()).strip()

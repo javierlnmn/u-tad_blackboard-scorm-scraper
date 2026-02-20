@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from scraper.formats.md import Markdown
 from scraper.parsers.blocks.base import LessonBlock
-from scraper.utils.html_to_markdown import html_fragment_to_markdown
 from scraper.utils.assets import ensure_asset, safe_basename_from_url, safe_filename
 
 
@@ -62,15 +62,12 @@ class LabeledImageBlock(LessonBlock):
         lines: list[str] = []
         if self.asset_filename:
             alt = self.image_alt or 'image'
-            lines.append(f'![{alt}](assets/{self.asset_filename})')
+            lines.append(Markdown.image(alt, f'assets/{self.asset_filename}'))
             lines.append('')
 
         for title, desc_html in self.items:
-            desc_md = html_fragment_to_markdown(desc_html or '').strip()
-            lines.append(f'- **{title}**  ')
-            if desc_md:
-                for ln in desc_md.splitlines():
-                    lines.append(('  ' + ln) if ln.strip() else '')
+            desc_md = Markdown.html(desc_html)
+            lines.append(Markdown.bullet_item(title, desc_md))
 
         out = '\n'.join(lines).strip()
         return out if out else (self.locator.text_content() or '').strip()
@@ -82,7 +79,7 @@ class LabeledImageBlock(LessonBlock):
         if self.image_url:
             parts.append(self.image_url)
         for title, desc_html in self.items:
-            desc_txt = html_fragment_to_markdown(desc_html or '').strip()
+            desc_txt = Markdown.html(desc_html)
             chunk = title
             if desc_txt:
                 chunk = f'{chunk}\n{desc_txt}'.strip()

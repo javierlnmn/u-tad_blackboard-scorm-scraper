@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from scraper.formats.md import Markdown
 from scraper.parsers.blocks.base import LessonBlock
-from scraper.utils.html_to_markdown import html_fragment_to_markdown
 
 
 @dataclass
@@ -26,7 +26,7 @@ class TextBlock(LessonBlock):
         self.text = (self.text or '').strip()
 
     def _render_md(self, *, assets_dir=None) -> str:
-        md = html_fragment_to_markdown(self.html or '').strip()
+        md = Markdown.html(self.html)
         return md if md else (self.text or '')
 
     def _render_txt(self, *, assets_dir=None) -> str:

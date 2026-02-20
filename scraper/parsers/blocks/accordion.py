@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from scraper.formats.md import Markdown
 from scraper.parsers.blocks.base import LessonBlock
-from scraper.utils.html_to_markdown import html_fragment_to_markdown
 
 
 @dataclass
@@ -37,14 +37,8 @@ class AccordionBlock(LessonBlock):
 
         lines: list[str] = []
         for title, body_html in self.items:
-            body_md = html_fragment_to_markdown(body_html or '').strip()
-            if not body_md:
-                body_md = ''
-
-            lines.append(f'- **{title}**  ')
-            if body_md:
-                for ln in body_md.splitlines():
-                    lines.append(('  ' + ln) if ln.strip() else '')
+            body_md = Markdown.html(body_html) or ''
+            lines.append(Markdown.bullet_item(title, body_md))
         return '\n'.join(lines).strip()
 
     def _render_txt(self, *, assets_dir=None) -> str:
@@ -53,7 +47,7 @@ class AccordionBlock(LessonBlock):
 
         parts: list[str] = []
         for title, body_html in self.items:
-            body = html_fragment_to_markdown(body_html or '').strip()
+            body = Markdown.html(body_html)
             chunk = title
             if body:
                 chunk = f'{chunk}\n{body}'.strip()

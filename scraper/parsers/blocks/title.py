@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from scraper.formats.md import Markdown
 from scraper.parsers.blocks.base import LessonBlock
 
 
@@ -26,7 +27,7 @@ class TitleBlock(LessonBlock):
     def _render_md(self, *, assets_dir=None) -> str:
         source_level = self.level or 3
         h = min(max(source_level + 1, 4), 6)
-        return f'{"#" * h} {self.title}'.strip()
+        return Markdown.heading(h, self.title)
 
     def _render_txt(self, *, assets_dir=None) -> str:
         return self.title

@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from scraper.formats.md import Markdown
 from scraper.parsers.blocks.base import LessonBlock
-from scraper.utils.html_to_markdown import html_fragment_to_markdown
-from scraper.utils.md import render_link_callout
 
 
 @dataclass
@@ -41,8 +40,8 @@ class ButtonStackBlock(LessonBlock):
 
         callouts: list[str] = []
         for desc_html, href in self.entries:
-            desc_md = html_fragment_to_markdown(desc_html or '').strip()
-            callouts.append(render_link_callout(desc_md, href))
+            desc_md = Markdown.html(desc_html)
+            callouts.append(Markdown.link_callout(desc_md, href))
         return '\n\n'.join(c for c in callouts if c.strip()).strip()
 
     def _render_txt(self, *, assets_dir=None) -> str:
@@ -51,7 +50,7 @@ class ButtonStackBlock(LessonBlock):
 
         parts: list[str] = []
         for desc_html, href in self.entries:
-            desc_txt = html_fragment_to_markdown(desc_html or '').strip()
+            desc_txt = Markdown.html(desc_html)
             chunk = desc_txt
             if href:
                 chunk = f'{chunk}\n{href}'.strip() if chunk else href

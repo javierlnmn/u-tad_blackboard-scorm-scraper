@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from scraper.formats.md import Markdown
 from scraper.parsers.blocks.base import LessonBlock
-from scraper.utils.html_to_markdown import html_fragment_to_markdown
 from scraper.utils.assets import ensure_asset, safe_basename_from_url, safe_filename
 
 
@@ -81,19 +81,13 @@ class TabsBlock(LessonBlock):
 
         lines: list[str] = []
         for i, (title, body_html, body_text) in enumerate(self.tabs):
-            title = title.strip() or f'Tab {i + 1}'
-            body_md = html_fragment_to_markdown(body_html or '').strip()
-            if not body_md:
-                body_md = body_text or ''
+            title_str = title.strip() or f'Tab {i + 1}'
+            body_md = Markdown.html(body_html) or body_text or ''
 
-            lines.append(f'- **{title}**  ')
-
-            if body_md:
-                for ln in body_md.splitlines():
-                    lines.append(('  ' + ln) if ln.strip() else '')
+            lines.append(Markdown.bullet_item(title_str, body_md))
 
             for filename, alt in self.images_by_tab_index.get(i, []):
-                lines.append(f'  ![{alt}](assets/{filename})')
+                lines.append(f'  {Markdown.image(alt, f"assets/{filename}")}')
 
         return '\n'.join(lines).strip()
 
@@ -103,9 +97,9 @@ class TabsBlock(LessonBlock):
 
         parts: list[str] = []
         for i, (title, body_html, body_text) in enumerate(self.tabs):
-            title = title.strip() or f'Tab {i + 1}'
-            body = html_fragment_to_markdown(body_html or '').strip() or body_text
-            chunk = title
+            title_str = title.strip() or f'Tab {i + 1}'
+            body = Markdown.html(body_html) or body_text
+            chunk = title_str
             if body:
                 chunk = f'{chunk}\n{body}'.strip()
             parts.append(chunk)

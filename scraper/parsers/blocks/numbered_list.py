@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from scraper.formats.md import Markdown
 from scraper.parsers.blocks.base import LessonBlock
-from scraper.utils.html_to_markdown import html_fragment_to_markdown
 
 
 @dataclass
@@ -39,10 +39,8 @@ class NumberedListBlock(LessonBlock):
 
         rendered: list[str] = []
         for num, item_html in self.items:
-            md = html_fragment_to_markdown(item_html or '').strip()
-            if not md:
-                md = ''
-            rendered.append(_render_numbered_item(num, md))
+            md = Markdown.html(item_html) or ''
+            rendered.append(Markdown.numbered_item(num, md))
         return '\n'.join(r for r in rendered if r.strip()).strip()
 
     def _render_txt(self, *, assets_dir=None) -> str:
@@ -51,19 +49,6 @@ class NumberedListBlock(LessonBlock):
 
         rendered: list[str] = []
         for num, item_html in self.items:
-            md = html_fragment_to_markdown(item_html or '').strip()
+            md = Markdown.html(item_html)
             rendered.append(f'{num}. {md}'.strip())
         return '\n'.join(r for r in rendered if r.strip()).strip()
-
-
-def _render_numbered_item(num: str, md: str) -> str:
-    prefix = f'{num}. '
-    lines = md.splitlines() if md else ['']
-    if not lines:
-        return prefix.rstrip()
-
-    out = [prefix + lines[0].strip()]
-    indent = ' ' * len(prefix)
-    for ln in lines[1:]:
-        out.append((indent + ln) if ln.strip() else '')
-    return '\n'.join(out).rstrip()

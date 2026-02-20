@@ -40,3 +40,13 @@ class AccordionBlock(LessonBlock):
             body_md = Markdown.html(body_html) or ''
             lines.append(Markdown.bullet_item(title, body_md))
         return '\n'.join(lines).strip()
+
+    def _render_pdf(self, builder, *, assets_dir=None) -> list:
+        if not self.items:
+            return []
+        out: list = []
+        for title, body_html in self.items:
+            body = Markdown.html(body_html) or ''
+            items = [f'{title}: {body}'] if body else [title]
+            out.extend(builder.build_bullet_list(items))
+        return out

@@ -87,3 +87,9 @@ class VideoBlock(LessonBlock):
             f'<video controls preload="metadata" src="assets/{self.video_asset_filename}"{poster_attr}>'
             f'</video>'
         ).strip()
+
+    def _render_pdf(self, builder, *, assets_dir=None) -> list:
+        msg = 'Video is not available in this output.'
+        if self.video_url:
+            msg = f'{msg} Source: {self.video_url}'
+        return builder.build_paragraph(msg)

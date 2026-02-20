@@ -28,3 +28,6 @@ class TitleBlock(LessonBlock):
         source_level = self.level or 3
         h = min(max(source_level + 1, 4), 6)
         return Markdown.heading(h, self.title)
+
+    def _render_pdf(self, builder, *, assets_dir=None) -> list:
+        return builder.build_subheading(self.title) if self.title else []

@@ -114,3 +114,23 @@ class SlideshowBlock(LessonBlock):
 
         out = '\n'.join(lines).strip()
         return out if out else (self.locator.text_content() or '').strip()
+
+    def _render_pdf(self, builder, *, assets_dir: Path | None = None) -> list:
+        out: list = []
+        if assets_dir and self.image_url_by_filename:
+            for filename, url in self.image_url_by_filename.items():
+                ensure_asset(locator=self.locator, url=url, assets_dir=assets_dir, filename=filename)
+        intro = Markdown.html(self.intro_body_html) or self.intro_body_text or ''
+        if self.intro_title:
+            out.extend(builder.build_subheading(self.intro_title))
+        if intro:
+            out.extend(builder.build_paragraph(intro))
+        for step_num, body_html, body_text, asset_filename, alt in self.steps:
+            body = Markdown.html(body_html) or body_text or ''
+            if asset_filename and assets_dir:
+                path = assets_dir / asset_filename
+                if path.exists():
+                    out.extend(builder.build_image(path))
+            if body:
+                out.extend(builder.build_paragraph(f'{step_num}. {body}'))
+        return out

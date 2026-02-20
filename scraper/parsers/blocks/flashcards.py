@@ -40,3 +40,13 @@ class FlashcardsBlock(LessonBlock):
             back_md = Markdown.html(back_html)
             lines.append(Markdown.bullet_item(title, back_md))
         return '\n'.join(lines).strip()
+
+    def _render_pdf(self, builder, *, assets_dir=None) -> list:
+        if not self.cards:
+            return []
+        out: list = []
+        for title, back_html in self.cards:
+            back = Markdown.html(back_html) or ''
+            items = [f'{title}: {back}'] if back else [title]
+            out.extend(builder.build_bullet_list(items))
+        return out

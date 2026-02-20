@@ -16,3 +16,6 @@ class UnknownBlock(LessonBlock):
 
     def _render_md(self, *, assets_dir=None) -> str:
         return self.text
+
+    def _render_pdf(self, builder, *, assets_dir=None) -> list:
+        return builder.build_paragraph(self.text) if self.text else []

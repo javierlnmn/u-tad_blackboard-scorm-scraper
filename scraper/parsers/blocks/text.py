@@ -28,3 +28,7 @@ class TextBlock(LessonBlock):
     def _render_md(self, *, assets_dir=None) -> str:
         md = Markdown.html(self.html)
         return md if md else (self.text or '')
+
+    def _render_pdf(self, builder, *, assets_dir=None) -> list:
+        text = Markdown.html(self.html) or self.text or ''
+        return builder.build_paragraph(text) if text else []

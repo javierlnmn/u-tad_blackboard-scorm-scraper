@@ -42,3 +42,9 @@ class NumberedListBlock(LessonBlock):
             md = Markdown.html(item_html) or ''
             rendered.append(Markdown.numbered_item(num, md))
         return '\n'.join(r for r in rendered if r.strip()).strip()
+
+    def _render_pdf(self, builder, *, assets_dir=None) -> list:
+        if not self.items:
+            return []
+        items = [Markdown.html(html) or '' for _, html in self.items]
+        return builder.build_numbered_list(items)

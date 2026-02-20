@@ -90,3 +90,22 @@ class TabsBlock(LessonBlock):
                 lines.append(f'  {Markdown.image(alt, f"assets/{filename}")}')
 
         return '\n'.join(lines).strip()
+
+    def _render_pdf(self, builder, *, assets_dir: Path | None = None) -> list:
+        if not self.tabs:
+            return []
+        out: list = []
+        if assets_dir and self.images:
+            for filename, url in self.images.items():
+                ensure_asset(locator=self.locator, url=url, assets_dir=assets_dir, filename=filename)
+        for i, (title, body_html, body_text) in enumerate(self.tabs):
+            title_str = title.strip() or f'Tab {i + 1}'
+            body = Markdown.html(body_html) or body_text or ''
+            items = [f'{title_str}: {body}'] if body else [title_str]
+            out.extend(builder.build_bullet_list(items))
+            if assets_dir:
+                for filename, _alt in self.images_by_tab_index.get(i, []):
+                    path = assets_dir / filename
+                    if path.exists():
+                        out.extend(builder.build_image(path))
+        return out

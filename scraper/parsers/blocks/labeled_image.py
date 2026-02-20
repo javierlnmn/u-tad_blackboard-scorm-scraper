@@ -71,3 +71,22 @@ class LabeledImageBlock(LessonBlock):
 
         out = '\n'.join(lines).strip()
         return out if out else (self.locator.text_content() or '').strip()
+
+    def _render_pdf(self, builder, *, assets_dir: Path | None = None) -> list:
+        out: list = []
+        if assets_dir and self.image_url and self.asset_filename:
+            ensure_asset(
+                locator=self.locator,
+                url=self.image_url,
+                assets_dir=assets_dir,
+                filename=self.asset_filename,
+            )
+        if self.asset_filename and assets_dir:
+            path = assets_dir / self.asset_filename
+            if path.exists():
+                out.extend(builder.build_image(path))
+        for title, desc_html in self.items:
+            desc = Markdown.html(desc_html) or ''
+            items = [f'{title}: {desc}'] if desc else [title]
+            out.extend(builder.build_bullet_list(items))
+        return out

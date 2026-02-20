@@ -48,3 +48,17 @@ class GalleryCarouselBlock(LessonBlock):
                 ensure_asset(locator=self.locator, url=url, assets_dir=assets_dir, filename=filename)
 
         return '\n\n'.join(f'![{alt}](assets/{filename})' for filename, alt, _ in self.images).strip()
+
+    def _render_pdf(self, builder, *, assets_dir: Path | None = None) -> list:
+        if not self.images:
+            return []
+        out: list = []
+        if assets_dir:
+            for filename, _alt, url in self.images:
+                ensure_asset(locator=self.locator, url=url, assets_dir=assets_dir, filename=filename)
+        for filename, _alt, _ in self.images:
+            if assets_dir:
+                path = assets_dir / filename
+                if path.exists():
+                    out.extend(builder.build_image(path))
+        return out

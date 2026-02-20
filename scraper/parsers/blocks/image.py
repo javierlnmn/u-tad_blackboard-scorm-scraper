@@ -47,3 +47,17 @@ class ImageBlock(LessonBlock):
             return Markdown.image(alt, f'assets/{self.asset_filename}')
 
         return (self.locator.text_content() or '').strip()
+
+    def _render_pdf(self, builder, *, assets_dir: Path | None = None) -> list:
+        if self.image_url and self.asset_filename and assets_dir:
+            ensure_asset(
+                locator=self.locator,
+                url=self.image_url,
+                assets_dir=assets_dir,
+                filename=self.asset_filename,
+            )
+        if self.asset_filename and assets_dir:
+            path = assets_dir / self.asset_filename
+            if path.exists():
+                return builder.build_image(path)
+        return []

@@ -43,3 +43,15 @@ class ButtonStackBlock(LessonBlock):
             desc_md = Markdown.html(desc_html)
             callouts.append(Markdown.link_callout(desc_md, href))
         return '\n\n'.join(c for c in callouts if c.strip()).strip()
+
+    def _render_pdf(self, builder, *, assets_dir=None) -> list:
+        if not self.entries:
+            return []
+        out: list = []
+        for desc_html, href in self.entries:
+            body = Markdown.html(desc_html) or ''
+            if href:
+                body = f'{body} [Link: {href}]' if body else href
+            if body:
+                out.extend(builder.build_paragraph(body))
+        return out

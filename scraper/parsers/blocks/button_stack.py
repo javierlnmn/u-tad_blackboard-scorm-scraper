@@ -50,8 +50,6 @@ class ButtonStackBlock(LessonBlock):
         out: list = []
         for desc_html, href in self.entries:
             body = Markdown.html(desc_html) or ''
-            if href:
-                body = f'{body} [Link: {href}]' if body else href
-            if body:
-                out.extend(builder.build_paragraph(body))
+            if body or href:
+                out.extend(builder.build_callout(body, href, link_text='View link'))
         return out

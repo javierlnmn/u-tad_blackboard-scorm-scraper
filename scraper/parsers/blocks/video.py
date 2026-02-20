@@ -90,6 +90,4 @@ class VideoBlock(LessonBlock):
 
     def _render_pdf(self, builder, *, assets_dir=None) -> list:
         msg = 'Video is not available in this output.'
-        if self.video_url:
-            msg = f'{msg} Source: {self.video_url}'
-        return builder.build_paragraph(msg)
+        return builder.build_callout(msg, self.video_url, link_text='View source')

@@ -36,6 +36,8 @@ class ButtonBlock(LessonBlock):
 
     def _render_pdf(self, builder, *, assets_dir=None) -> list:
         body = Markdown.html(self.description_html) or self.description_text or ''
-        if self.href:
-            body = f'{body} [Link: {self.href}]' if body else self.href
-        return builder.build_paragraph(body) if body else []
+        return (
+            builder.build_callout(body, self.href, link_text='View link')
+            if (body or self.href)
+            else []
+        )

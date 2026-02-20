@@ -71,4 +71,4 @@ class CodeBlock(LessonBlock):
         return Markdown.code_block(self.code, self.lang)
 
     def _render_pdf(self, builder, *, assets_dir=None) -> list:
-        return builder.build_paragraph(self.code) if self.code else []
+        return builder.build_code_block(self.code, self.lang) if self.code else []

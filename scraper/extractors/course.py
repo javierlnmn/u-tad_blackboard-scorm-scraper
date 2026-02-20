@@ -4,13 +4,15 @@ import logging
 
 from playwright.sync_api import Frame, Locator, Page
 
-from scraper.extractors.lesson import extract_lesson, find_frame_with_matching_element
+from scraper.extractors.lesson import extract_lesson
 from scraper.models.course_scheme import CourseScheme, CourseSchemeSection
 from scraper.parsers.sidebar import SIDEBAR_LESSON_LINKS_SELECTOR, parse_sidebar
 
 logger = logging.getLogger(__name__)
 
 CONTENT_FRAME = '#content-frame'
+COVER_PAGE_SELECTOR = '#cover'
+COVER_START_COURSE_BUTTON_SELECTOR = '.cover__header-content-action-link'
 LESSON_CONTENT_SELECTOR = '[data-lesson-id]'
 SIDEBAR_SELECTOR = '#nav-content-sidebar'
 
@@ -39,15 +41,13 @@ def extract_course(scorm_page: Page) -> CourseScheme:
         scorm_frame = _frame_from_iframe(scorm_page, 'iframe')
 
     if not scorm_frame:
-        scorm_frame = find_frame_with_matching_element(scorm_page, SIDEBAR_SELECTOR)
-
-    if not scorm_frame:
-        scorm_frame = find_frame_with_matching_element(scorm_page, LESSON_CONTENT_SELECTOR)
-
-    if not scorm_frame:
         raise RuntimeError('Could not resolve SCORM content frame.')
     else:
         logger.info('Resolved SCORM content frame.')
+
+    if scorm_frame.locator(f'div{COVER_PAGE_SELECTOR}').count() > 0:
+        start_course_button = scorm_frame.locator(f'a{COVER_START_COURSE_BUTTON_SELECTOR}')
+        start_course_button.click()
 
     logger.info('Parsing course scheme...')
     course_scheme = _get_course_scheme(scorm_frame)

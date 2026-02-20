@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from scraper.parsers.blocks.base import LessonBlock
-from scraper.parsers.html_to_markdown import html_fragment_to_markdown
+from scraper.utils.html_to_markdown import html_fragment_to_markdown
 
 
 @dataclass
@@ -67,4 +67,3 @@ def _render_numbered_item(num: str, md: str) -> str:
     for ln in lines[1:]:
         out.append((indent + ln) if ln.strip() else '')
     return '\n'.join(out).rstrip()
-

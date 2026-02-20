@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from scraper.parsers.blocks.base import LessonBlock
-from scraper.parsers.html_to_markdown import html_fragment_to_markdown
+from scraper.utils.html_to_markdown import html_fragment_to_markdown
 
 
 @dataclass

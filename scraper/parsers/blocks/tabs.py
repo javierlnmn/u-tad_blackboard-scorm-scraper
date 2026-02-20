@@ -4,8 +4,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from scraper.parsers.blocks.base import LessonBlock
-from scraper.parsers.html_to_markdown import html_fragment_to_markdown
-from scraper.parsers.utils.assets import ensure_asset, safe_basename_from_url, safe_filename
+from scraper.utils.html_to_markdown import html_fragment_to_markdown
+from scraper.utils.assets import ensure_asset, safe_basename_from_url, safe_filename
 
 
 @dataclass

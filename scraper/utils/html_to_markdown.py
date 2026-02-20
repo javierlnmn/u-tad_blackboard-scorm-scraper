@@ -172,4 +172,3 @@ def _render_table(table: Tag) -> str:
 def _join_blocks(blocks: list[str]) -> str:
     cleaned = [b.strip() for b in blocks if b and b.strip()]
     return '\n\n'.join(cleaned)
-

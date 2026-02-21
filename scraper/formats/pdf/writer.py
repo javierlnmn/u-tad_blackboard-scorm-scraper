@@ -9,9 +9,12 @@ from reportlab.lib.units import inch
 from .builder import PDFBuilder
 
 
-def write_course(course, output_path: Path, *, assets_dir: Path) -> None:
+def write_course(course, output_path: Path, *, assets_dir: Path, theme: str | None = None) -> None:
     """Write course as PDF."""
-    builder = PDFBuilder(output_path)
+    from .themes import ThemeRegistry
+
+    pdf_theme = ThemeRegistry.from_name(theme or 'ocean').get_theme()
+    builder = PDFBuilder(output_path, theme=pdf_theme)
     builder.add_elements(builder.build_title(course.title))
     builder.add_elements(builder.build_spacer(0.1 * inch))
 

@@ -28,6 +28,7 @@ DEFAULT_VIEWPORT_WIDTH = 1440
 DEFAULT_VIEWPORT_HEIGHT = 900
 DEFAULT_COURSE_NAME = 'course'
 DEFAULT_OUTPUT_FORMAT = OutputFormat.MD
+DEFAULT_PDF_THEME = 'ocean'
 
 
 class Config:
@@ -38,6 +39,7 @@ class Config:
         self.course_name = DEFAULT_COURSE_NAME
         self.output_format = DEFAULT_OUTPUT_FORMAT
         self.output_path = f'./output/{self.course_name}'
+        self.pdf_theme = DEFAULT_PDF_THEME
 
 
 _CONFIG = Config()

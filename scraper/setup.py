@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 
 from scraper.config import Config, OutputFormat, get_config
+from scraper.formats.pdf import ThemeRegistry
 
 
 def _prompt(text: str, default: str) -> str:
@@ -53,6 +54,15 @@ def run_setup_wizard() -> Config:
     )
     output_format = OutputFormat.from_extension(output_format_raw)
 
+    pdf_theme = current.pdf_theme
+    if output_format == OutputFormat.PDF:
+        theme_options = [(t, t.capitalize()) for t in ThemeRegistry.list_themes()]
+        pdf_theme = _prompt_menu(
+            'PDF theme:',
+            options=theme_options,
+            default_id=current.pdf_theme if current.pdf_theme in {t for t, _ in theme_options} else 'ocean',
+        )
+
     default_output_dir = f'./output/{course_name}'
     output_path = _prompt('Output folder', default_output_dir)
 
@@ -62,6 +72,7 @@ def run_setup_wizard() -> Config:
     current.base_url = base_url
     current.course_name = course_name
     current.output_format = output_format
+    current.pdf_theme = pdf_theme
     current.output_path = output_path or f'./output/{course_name}'
     print('\nConfig set for this run.\n')
     return current

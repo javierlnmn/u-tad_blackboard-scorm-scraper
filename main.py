@@ -38,7 +38,12 @@ def main() -> None:
         scorm_page.wait_for_load_state()
 
         course = extract_course(scorm_page)
-        write_course(course, settings.output_path, output_format=settings.output_format)
+        write_course(
+            course,
+            settings.output_path,
+            output_format=settings.output_format,
+            pdf_theme=settings.pdf_theme,
+        )
 
 
 if __name__ == '__main__':

@@ -10,9 +10,7 @@ from .themes import (
     OceanTheme,
     PDFTheme,
     SlateTheme,
-    get_theme,
-    list_themes,
-    register_theme,
+    ThemeRegistry,
 )
 from .writer import write_course
 
@@ -23,9 +21,7 @@ __all__ = [
     'PDFBuilder',
     'PDFTheme',
     'SlateTheme',
-    'get_theme',
+    'ThemeRegistry',
     'html_to_flowables',
-    'list_themes',
-    'register_theme',
     'write_course',
 ]

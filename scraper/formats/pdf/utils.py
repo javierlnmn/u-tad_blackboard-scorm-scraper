@@ -5,18 +5,6 @@ from __future__ import annotations
 import html
 
 
-def luminance(hex_color: str) -> float:
-    h = (hex_color or '').strip().lstrip('#')
-    if len(h) == 6:
-        r, g, b = int(h[0:2], 16) / 255, int(h[2:4], 16) / 255, int(h[4:6], 16) / 255
-        return 0.299 * r + 0.587 * g + 0.114 * b
-    return 0.5
-
-
-def text_color_for_bg(hex_bg: str) -> str:
-    return '#FFFFFF' if luminance(hex_bg) < 0.45 else '#000000'
-
-
 def safe_text(text: str) -> str:
     return html.escape(text or '', quote=True)
 

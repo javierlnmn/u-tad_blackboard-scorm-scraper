@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from enum import Enum
 
 from reportlab.lib import colors
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.pdfbase import pdfmetrics
 
 from .config import PDF_FONT, PDF_FONT_BOLD
-from .utils import text_color_for_bg
 
 
 class PDFTheme(ABC):
@@ -67,6 +67,7 @@ class PDFTheme(ABC):
         self.table_grid = colors.grey
         self.callout_bg = colors.HexColor(self._callout_bg)
         self.callout_border = colors.HexColor(self._callout_border)
+        self.page_bg = colors.HexColor(self._page_bg)
 
     @property
     @abstractmethod
@@ -85,7 +86,7 @@ class PDFTheme(ABC):
 
     @property
     def _table_header_text_color(self) -> str:
-        return text_color_for_bg(self._table_header_bg)
+        return '#FFFFFF'
 
     @property
     @abstractmethod
@@ -95,6 +96,11 @@ class PDFTheme(ABC):
     @property
     @abstractmethod
     def _callout_border(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def _page_bg(self) -> str:
         raise NotImplementedError
 
 
@@ -115,11 +121,15 @@ class OceanTheme(PDFTheme):
 
     @property
     def _callout_bg(self) -> str:
-        return '#E8F4FC'
+        return '#D8E8F8'
 
     @property
     def _callout_border(self) -> str:
         return '#2E75B6'
+
+    @property
+    def _page_bg(self) -> str:
+        return '#EEEEEE'
 
 
 class ForestTheme(PDFTheme):
@@ -139,11 +149,15 @@ class ForestTheme(PDFTheme):
 
     @property
     def _callout_bg(self) -> str:
-        return '#E8F5E9'
+        return '#D8EBD8'
 
     @property
     def _callout_border(self) -> str:
         return '#2D6A4F'
+
+    @property
+    def _page_bg(self) -> str:
+        return '#E8E8E8'
 
 
 class SlateTheme(PDFTheme):
@@ -163,11 +177,15 @@ class SlateTheme(PDFTheme):
 
     @property
     def _callout_bg(self) -> str:
-        return '#F1F5F9'
+        return '#E2E8F0'
 
     @property
     def _callout_border(self) -> str:
         return '#64748B'
+
+    @property
+    def _page_bg(self) -> str:
+        return '#E5E7EB'
 
 
 class CrimsonTheme(PDFTheme):
@@ -187,32 +205,36 @@ class CrimsonTheme(PDFTheme):
 
     @property
     def _callout_bg(self) -> str:
-        return '#FEE2E2'
+        return '#F5D4D4'
 
     @property
     def _callout_border(self) -> str:
         return '#B91C1C'
 
-
-_THEME_REGISTRY: dict[str, type[PDFTheme]] = {
-    'default': OceanTheme,
-    OceanTheme.name: OceanTheme,
-    ForestTheme.name: ForestTheme,
-    SlateTheme.name: SlateTheme,
-    CrimsonTheme.name: CrimsonTheme,
-}
+    @property
+    def _page_bg(self) -> str:
+        return '#EDE8E8'
 
 
-def register_theme(theme_class: type[PDFTheme]) -> None:
-    _THEME_REGISTRY[theme_class.name] = theme_class
+class ThemeRegistry(Enum):
+    OCEAN = OceanTheme
+    FOREST = ForestTheme
+    SLATE = SlateTheme
+    CRIMSON = CrimsonTheme
 
+    def get_theme(self) -> PDFTheme:
+        return self.value()
 
-def get_theme(name: str) -> PDFTheme:
-    cls = _THEME_REGISTRY.get((name or '').lower().strip())
-    if cls is None:
-        return OceanTheme()
-    return cls()
+    @classmethod
+    def from_name(cls, name: str) -> ThemeRegistry:
+        key = (name or '').lower().strip() or 'ocean'
+        if key == 'default':
+            key = 'ocean'
+        try:
+            return cls[key.upper()]
+        except KeyError:
+            return cls.OCEAN
 
-
-def list_themes() -> list[str]:
-    return list(_THEME_REGISTRY.keys())
+    @classmethod
+    def list_themes(cls) -> list[str]:
+        return [m.name.lower() for m in cls]

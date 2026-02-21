@@ -105,7 +105,7 @@ class PDFBuilder:
         )
         _code_border_col = 12
         _code_content_col = MAX_CONTENT_WIDTH
-        _code_bg = colors.HexColor('#F5F5F5')
+        _code_bg = colors.HexColor('#EBEBEB')
         _code_border = colors.HexColor('#9E9E9E')
         lines = final_text.split('\n')
         _lines_per_page = 50
@@ -237,7 +237,7 @@ class PDFBuilder:
         ncols = max(len(row) for row in data)
         _table_width = MAX_CONTENT_WIDTH
         col_widths = [_table_width / ncols] * ncols
-        _table_row_alt = colors.HexColor('#F5F5F5')
+        _table_row_alt = colors.HexColor('#EBEBEB')
 
         header_style = ParagraphStyle(
             'TableHeader',
@@ -277,6 +277,16 @@ class PDFBuilder:
     def build_page_break(self) -> list:
         return [PageBreak()]
 
+    def _draw_page_bg(self, canvas, _doc) -> None:
+        canvas.saveState()
+        canvas.setFillColor(self.theme.page_bg)
+        canvas.rect(0, 0, self.doc.pagesize[0], self.doc.pagesize[1], fill=True, stroke=False)
+        canvas.restoreState()
+
     def build(self) -> None:
         if self.doc:
-            self.doc.build(self.elements)
+            self.doc.build(
+                self.elements,
+                onFirstPage=self._draw_page_bg,
+                onLaterPages=self._draw_page_bg,
+            )

@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 CONTENT_FRAME = '#content-frame'
 COVER_PAGE_SELECTOR = '#cover'
+COURSE_TITLE_SELECTOR = '.nav-sidebar-header__title'
 COVER_START_COURSE_BUTTON_SELECTOR = '.cover__header-content-action-link'
 LESSON_CONTENT_SELECTOR = '[data-lesson-id]'
 SIDEBAR_SELECTOR = '#nav-content-sidebar'
@@ -22,6 +23,13 @@ def _frame_from_iframe(page: Page, iframe_query_selector: str) -> Frame | None:
     if not iframe:
         return None
     return iframe.content_frame()
+
+
+def _get_course_title(scorm_frame: Frame) -> str:
+    title_locator = scorm_frame.locator(COURSE_TITLE_SELECTOR)
+    if title_locator.count() > 0:
+        return title_locator.first.inner_text().strip() or 'Course'
+    return 'Course'
 
 
 def _get_course_scheme(scorm_frame: Locator) -> list[CourseSchemeSection]:
@@ -51,10 +59,11 @@ def extract_course(scorm_page: Page) -> CourseScheme:
 
     logger.info('Parsing course scheme...')
     course_scheme = _get_course_scheme(scorm_frame)
+    course_title = _get_course_title(scorm_frame)
 
     if not course_scheme:
         logger.warning('No course scheme sections/lessons found.')
-        return CourseScheme(title=(scorm_page.title() or 'Course').strip(), sections=[])
+        return CourseScheme(title=course_title, sections=[])
     else:
         total_items = sum(len(s.lessons) for s in course_scheme)
         logger.info(
@@ -62,8 +71,6 @@ def extract_course(scorm_page: Page) -> CourseScheme:
             len(course_scheme),
             total_items,
         )
-
-    course_title = (scorm_page.title() or 'Course').strip()
 
     flat_lessons = [lesson for section in course_scheme for lesson in section.lessons]
     total_lessons = len(flat_lessons)

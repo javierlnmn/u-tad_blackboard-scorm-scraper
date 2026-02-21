@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from scraper.formats.md import Markdown
+from scraper.formats.pdf import html_to_flowables
 from scraper.parsers.blocks.base import LessonBlock
 
 
@@ -30,5 +31,7 @@ class TextBlock(LessonBlock):
         return md if md else (self.text or '')
 
     def _render_pdf(self, builder, *, assets_dir=None) -> list:
-        text = Markdown.html(self.html) or self.text or ''
-        return builder.build_paragraph(text) if text else []
+        if not (self.html or self.text):
+            return []
+        flows = html_to_flowables(self.html or self.text, builder, assets_dir=assets_dir)
+        return flows if flows else (builder.build_paragraph(self.text) if self.text else [])

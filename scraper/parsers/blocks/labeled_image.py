@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from scraper.formats.md import Markdown
+from scraper.formats.pdf import html_to_flowables
 from scraper.parsers.blocks.base import LessonBlock
 from scraper.utils.assets import ensure_asset, safe_basename_from_url, safe_filename
 
@@ -85,8 +86,9 @@ class LabeledImageBlock(LessonBlock):
             path = assets_dir / self.asset_filename
             if path.exists():
                 out.extend(builder.build_image(path))
+        items_with_content: list[tuple[str, list]] = []
         for title, desc_html in self.items:
-            desc = Markdown.html(desc_html) or ''
-            items = [f'{title}: {desc}'] if desc else [title]
-            out.extend(builder.build_bullet_list(items))
+            desc_flows = html_to_flowables(desc_html or '', builder, assets_dir=assets_dir)
+            items_with_content.append((title, desc_flows))
+        out.extend(builder.build_bullet_list_with_content(items_with_content))
         return out

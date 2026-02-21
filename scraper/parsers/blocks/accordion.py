@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from scraper.formats.md import Markdown
+from scraper.formats.pdf import html_to_flowables
 from scraper.parsers.blocks.base import LessonBlock
 
 
@@ -44,9 +45,8 @@ class AccordionBlock(LessonBlock):
     def _render_pdf(self, builder, *, assets_dir=None) -> list:
         if not self.items:
             return []
-        out: list = []
+        items_with_content: list[tuple[str, list]] = []
         for title, body_html in self.items:
-            body = Markdown.html(body_html) or ''
-            items = [f'{title}: {body}'] if body else [title]
-            out.extend(builder.build_bullet_list(items))
-        return out
+            body_flows = html_to_flowables(body_html or '', builder, assets_dir=assets_dir)
+            items_with_content.append((title, body_flows))
+        return builder.build_bullet_list_with_content(items_with_content)

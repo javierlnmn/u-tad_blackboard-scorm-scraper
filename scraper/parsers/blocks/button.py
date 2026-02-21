@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from scraper.formats.md import Markdown
+from scraper.formats.pdf import html_to_flowables
 from scraper.parsers.blocks.base import LessonBlock
 
 
@@ -35,9 +36,16 @@ class ButtonBlock(LessonBlock):
         return Markdown.link_callout(body, self.href)
 
     def _render_pdf(self, builder, *, assets_dir=None) -> list:
-        body = Markdown.html(self.description_html) or self.description_text or ''
-        return (
-            builder.build_callout(body, self.href, link_text='View link')
-            if (body or self.href)
-            else []
+        if not (self.description_html or self.description_text or self.href):
+            return []
+        body_flows = html_to_flowables(
+            self.description_html or self.description_text or '',
+            builder,
+            assets_dir=assets_dir,
+        )
+        return builder.build_callout(
+            body=(self.description_text or '') if not body_flows else None,
+            href=self.href,
+            body_flowables=body_flows if body_flows else None,
+            link_text='View link',
         )

@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from scraper.formats.md import Markdown
+from scraper.formats.pdf import html_to_flowables
 from scraper.parsers.blocks.base import LessonBlock
 from scraper.utils.assets import ensure_asset, safe_basename_from_url, safe_filename
 
@@ -94,18 +95,18 @@ class TabsBlock(LessonBlock):
     def _render_pdf(self, builder, *, assets_dir: Path | None = None) -> list:
         if not self.tabs:
             return []
-        out: list = []
         if assets_dir and self.images:
             for filename, url in self.images.items():
                 ensure_asset(locator=self.locator, url=url, assets_dir=assets_dir, filename=filename)
+        items_with_content: list[tuple[str, list]] = []
         for i, (title, body_html, body_text) in enumerate(self.tabs):
             title_str = title.strip() or f'Tab {i + 1}'
-            body = Markdown.html(body_html) or body_text or ''
-            items = [f'{title_str}: {body}'] if body else [title_str]
-            out.extend(builder.build_bullet_list(items))
+            body_flows = html_to_flowables(body_html or body_text or '', builder, assets_dir=assets_dir)
+            tab_flows = list(body_flows)
             if assets_dir:
                 for filename, _alt in self.images_by_tab_index.get(i, []):
                     path = assets_dir / filename
                     if path.exists():
-                        out.extend(builder.build_image(path))
-        return out
+                        tab_flows.extend(builder.build_image(path))
+            items_with_content.append((title_str, tab_flows))
+        return builder.build_bullet_list_with_content(items_with_content)

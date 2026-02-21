@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from scraper.formats.md import Markdown
+from scraper.formats.pdf import html_to_flowables
 from scraper.parsers.blocks.base import LessonBlock
 
 
@@ -49,7 +50,14 @@ class ButtonStackBlock(LessonBlock):
             return []
         out: list = []
         for desc_html, href in self.entries:
-            body = Markdown.html(desc_html) or ''
-            if body or href:
-                out.extend(builder.build_callout(body, href, link_text='View link'))
+            body_flows = html_to_flowables(desc_html or '', builder, assets_dir=assets_dir)
+            if body_flows or href:
+                out.extend(
+                    builder.build_callout(
+                        body=None,
+                        href=href,
+                        body_flowables=body_flows if body_flows else None,
+                        link_text='View link',
+                    )
+                )
         return out

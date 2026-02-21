@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from scraper.formats.md import Markdown
+from scraper.formats.pdf import html_to_flowables
 from scraper.parsers.blocks.base import LessonBlock
 
 
@@ -46,5 +47,8 @@ class NumberedListBlock(LessonBlock):
     def _render_pdf(self, builder, *, assets_dir=None) -> list:
         if not self.items:
             return []
-        items = [Markdown.html(html) or '' for _, html in self.items]
-        return builder.build_numbered_list(items)
+        items_flows = [
+            html_to_flowables(html, builder, assets_dir=assets_dir)
+            for _, html in self.items
+        ]
+        return builder.build_numbered_list_with_content(items_flows)

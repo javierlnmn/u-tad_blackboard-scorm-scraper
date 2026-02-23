@@ -23,7 +23,7 @@ from reportlab.platypus import (
     XPreformatted,
 )
 
-from .config import MAX_CONTENT_WIDTH, PDF_FONT_JETBRAINS
+from .config import MAX_CONTENT_WIDTH, MAX_IMAGE_HEIGHT, PDF_FONT_JETBRAINS
 from .themes import OceanTheme, PDFTheme
 from .utils import link_tag, safe_text, wrap_code_lines
 
@@ -337,10 +337,23 @@ class PDFBuilder:
         return [table, Spacer(1, 0.3 * inch)]
 
     def build_image(self, path: Path, width: float | None = None) -> list:
+        max_w = width if width is not None else MAX_CONTENT_WIDTH
+        max_h = MAX_IMAGE_HEIGHT
+
         img = Image(str(path), hAlign='CENTER')
-        w = width if width is not None else MAX_CONTENT_WIDTH
-        img.drawWidth = min(w, img.imageWidth)
-        img.drawHeight = img.drawWidth * img.imageHeight / img.imageWidth
+        iw, ih = img.imageWidth, img.imageHeight
+        if iw and ih:
+            scale = min(1, max_w / iw, max_h / ih)
+            img.drawWidth = iw * scale
+            img.drawHeight = ih * scale
+
+        # At wrap time, shrink further if frame is smaller (e.g. mid-page)
+        def wrap(aW, aH):
+            if img.drawWidth > aW or img.drawHeight > aH:
+                img._restrictSize(aW, aH)
+            return img.drawWidth, img.drawHeight
+
+        img.wrap = wrap
         return [img, Spacer(1, 0.2 * inch)]
 
     def build_spacer(self, height: float = 0.2 * inch) -> list:

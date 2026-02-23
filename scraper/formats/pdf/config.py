@@ -6,6 +6,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from scraper.config import _PROJECT_ROOT
 
 MAX_CONTENT_WIDTH = 430
+MAX_IMAGE_HEIGHT = 600
 
 _FONTS_DIR = _PROJECT_ROOT / 'assets' / 'fonts'
 _INTER_REGULAR = _FONTS_DIR / 'inter' / 'Inter-VariableFont_opsz,wght.ttf'

@@ -41,7 +41,7 @@ def main() -> None:
         write_course(
             course,
             settings.output_path,
-            output_format=settings.output_format,
+            output_formats=settings.output_formats,
             pdf_theme=settings.pdf_theme,
         )
 

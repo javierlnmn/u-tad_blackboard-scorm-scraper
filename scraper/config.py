@@ -37,7 +37,7 @@ class Config:
         self.viewport_width = DEFAULT_VIEWPORT_WIDTH
         self.viewport_height = DEFAULT_VIEWPORT_HEIGHT
         self.course_name = DEFAULT_COURSE_NAME
-        self.output_format = DEFAULT_OUTPUT_FORMAT
+        self.output_formats: list[OutputFormat] = [DEFAULT_OUTPUT_FORMAT]
         self.output_path = f'./output/{self.course_name}'
         self.pdf_theme = DEFAULT_PDF_THEME
         self.download_videos = False

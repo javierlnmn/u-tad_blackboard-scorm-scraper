@@ -13,30 +13,36 @@ def write_course(
     course: CourseScheme,
     path: str | Path,
     *,
-    output_format: OutputFormat | str = OutputFormat.MD,
+    output_formats: list[OutputFormat] | None = None,
+    output_format: OutputFormat | str | None = None,
     pdf_theme: str | None = None,
 ) -> None:
     output_dir = Path(path)
     output_dir.mkdir(parents=True, exist_ok=True)
     assets_dir = output_dir / 'assets'
 
-    fmt = (
-        output_format
-        if isinstance(output_format, OutputFormat)
-        else OutputFormat.from_extension(output_format)
-    )
-
-    filename = f'{course.title}.{fmt.extension}'
-    safe_filename = ''.join(
-        ch if ch.isalnum() or ch in {'.', '-', '_', ' '} else '_' for ch in filename
-    ).strip()
-    safe_filename = safe_filename.replace('  ', ' ').strip() or f'course.{fmt.extension}'
-    output_file = output_dir / safe_filename
-
-    write_file(course, output_file, fmt, assets_dir=assets_dir, pdf_theme=pdf_theme)
+    if output_formats:
+        fmts = output_formats
+    elif output_format is not None:
+        fmt = (
+            output_format
+            if isinstance(output_format, OutputFormat)
+            else OutputFormat.from_extension(output_format)
+        )
+        fmts = [fmt]
+    else:
+        fmts = [OutputFormat.MD]
 
     lessons_count = sum(len(s.lessons) for s in course.sections)
-    logger.info('Wrote %s lessons to %s', lessons_count, output_file)
+    for fmt in fmts:
+        filename = f'{course.title}.{fmt.extension}'
+        safe_filename = ''.join(
+            ch if ch.isalnum() or ch in {'.', '-', '_', ' '} else '_' for ch in filename
+        ).strip()
+        safe_filename = safe_filename.replace('  ', ' ').strip() or f'course.{fmt.extension}'
+        output_file = output_dir / safe_filename
+        write_file(course, output_file, fmt, assets_dir=assets_dir, pdf_theme=pdf_theme)
+        logger.info('Wrote %s lessons to %s', lessons_count, output_file)
 
 
 def write_file(

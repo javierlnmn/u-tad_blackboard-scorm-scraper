@@ -46,8 +46,6 @@ def html_to_flowables(
     *,
     assets_dir: Path | None = None,
 ) -> list:
-    """Convert HTML to a list of PDF flowables. Handles bold, italic, links, tables, lists."""
-
     soup = BeautifulSoup(html_text or '', 'html.parser')
     flowables: list = []
 

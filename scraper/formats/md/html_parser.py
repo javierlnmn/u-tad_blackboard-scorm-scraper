@@ -1,5 +1,3 @@
-"""HTML to Markdown conversion."""
-
 from __future__ import annotations
 
 from bs4 import BeautifulSoup

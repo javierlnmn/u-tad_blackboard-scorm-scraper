@@ -24,14 +24,6 @@ def safe_filename(name: str) -> str:
 
 
 def download_via_fetch(locator: Any, url: str) -> bytes | None:
-    """Download bytes using the authenticated browser context.
-
-    Fast path: use Playwright's `page.request` to avoid base64 roundtrips.
-    Fallback: `evaluate(fetch)` + base64 (handles relative URLs in-page).
-
-    `locator` is any Playwright object that supports `.evaluate(js, arg)`.
-    """
-
     page = getattr(locator, 'page', None)
     if page is not None and isinstance(url, str):
         u = url.strip()
@@ -75,6 +67,7 @@ def download_via_fetch(locator: Any, url: str) -> bytes | None:
 
 def ensure_asset(*, locator: Any, url: str, assets_dir: Path, filename: str) -> bool:
     """Download `url` into `assets_dir/filename` if missing. Logs progress."""
+
     assets_dir.mkdir(parents=True, exist_ok=True)
     target = assets_dir / filename
 

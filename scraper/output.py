@@ -47,7 +47,6 @@ def write_file(
     assets_dir: Path,
     pdf_theme: str | None = None,
 ) -> None:
-    """Write course to file in the given format."""
     if fmt == OutputFormat.MD:
         from scraper.formats.md import MDWriter
 

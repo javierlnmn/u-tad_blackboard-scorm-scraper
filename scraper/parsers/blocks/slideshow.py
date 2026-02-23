@@ -27,7 +27,6 @@ class SlideshowBlock(LessonBlock):
             return (' '.join((text or '').split())).strip()
 
         def _safe_text_content(el) -> str:
-            """Best-effort text extraction without long Playwright auto-waits."""
             try:
                 if not el.count():
                     return ''
@@ -109,7 +108,9 @@ class SlideshowBlock(LessonBlock):
 
             if asset_filename:
                 img = MarkdownBuilder.build_image(alt or 'image', f'assets/{asset_filename}')
-                lines.append(MarkdownBuilder.build_numbered_item(step_num, f'{img}\n{body_md}' if body_md else img))
+                lines.append(
+                    MarkdownBuilder.build_numbered_item(step_num, f'{img}\n{body_md}' if body_md else img)
+                )
             else:
                 lines.append(MarkdownBuilder.build_numbered_item(step_num, body_md))
 
@@ -131,9 +132,7 @@ class SlideshowBlock(LessonBlock):
         out.extend(intro_flows)
         step_items: list[list] = []
         for step_num, body_html, body_text, asset_filename, alt in self.steps:
-            body_flows = html_to_flowables(
-                body_html or body_text or '', builder, assets_dir=assets_dir
-            )
+            body_flows = html_to_flowables(body_html or body_text or '', builder, assets_dir=assets_dir)
             path = (assets_dir / asset_filename) if (asset_filename and assets_dir) else None
             has_image = path is not None and path.exists()
             if body_flows or has_image:

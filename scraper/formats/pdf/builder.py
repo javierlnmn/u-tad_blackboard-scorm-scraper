@@ -1,5 +1,3 @@
-"""PDFBuilder for constructing PDF documents."""
-
 from __future__ import annotations
 
 import html

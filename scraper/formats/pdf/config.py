@@ -1,5 +1,3 @@
-"""PDF font and layout configuration."""
-
 from __future__ import annotations
 
 from reportlab.pdfbase import pdfmetrics

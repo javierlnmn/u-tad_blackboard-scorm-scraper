@@ -8,6 +8,7 @@ from typing import Any, ClassVar
 from playwright.sync_api import Locator
 
 from scraper.config import OutputFormat
+from scraper.formats.md import MarkdownBuilder
 from scraper.formats.pdf import PDFBuilder
 
 
@@ -28,31 +29,28 @@ class LessonBlock(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _render_md(self, *, assets_dir: Path | None = None) -> str:
+    def _render_md(self, builder: MarkdownBuilder, assets_dir: Path | None = None) -> str:
         """Render this block as Markdown."""
         raise NotImplementedError
 
     @abstractmethod
-    def _render_pdf(self, builder: PDFBuilder, *, assets_dir: Path | None = None) -> list:
+    def _render_pdf(self, builder: PDFBuilder, assets_dir: Path | None = None) -> list:
         """Return flowables for this block's PDF content."""
         raise NotImplementedError
 
     def render(
         self,
         fmt: OutputFormat = OutputFormat.MD,
-        *,
         assets_dir: Path | None = None,
-        builder: PDFBuilder | None = None,
+        builder: PDFBuilder | MarkdownBuilder | None = None,
     ) -> Any:
         if self.skip:
             return None
 
         if fmt == OutputFormat.PDF:
-            if not builder:
-                raise ValueError('PDF builder is required when rendering PDF blocks.')
             return self._render_pdf(builder, assets_dir=assets_dir)
 
         if fmt == OutputFormat.MD:
-            return self._render_md(assets_dir=assets_dir)
+            return self._render_md(builder, assets_dir=assets_dir)
 
         raise ValueError(f'Unknown output format: {fmt!r}')

@@ -6,6 +6,8 @@ from scraper.config import OutputFormat
 from scraper.formats.base import CourseWriter
 from scraper.utils.links import slugify
 
+from .builder import MarkdownBuilder
+
 
 class MDWriter(CourseWriter):
     def write(
@@ -16,10 +18,12 @@ class MDWriter(CourseWriter):
         assets_dir: Path,
         **kwargs: object,
     ) -> None:
-        chunks: list[str] = []
-        chunks.append(f'# {course.title}'.strip())
-        chunks.append('')
+        builder = MarkdownBuilder(output_path)
 
+        builder.add_elements(builder.build_heading(1, course.title))
+        builder.add_elements(builder.build_spacer())
+
+        # Index
         index_entries: list[tuple[int, str]] = []
         for section_idx, section in enumerate(course.sections, start=1):
             index_entries.append((2, f'{section_idx}. {section.title}'.strip()))
@@ -28,7 +32,7 @@ class MDWriter(CourseWriter):
 
         if index_entries:
             used: dict[str, int] = {}
-            lines = ['## Index', '']
+            lines = [builder.build_heading(2, 'Index'), '']
             for level, heading in index_entries:
                 base = slugify(heading)
                 n = used.get(base, 0)
@@ -37,22 +41,22 @@ class MDWriter(CourseWriter):
                 indent = '  ' * max(0, level - 2)
                 lines.append(f'{indent}- [{heading}](#{anchor})')
             lines.append('')
-            chunks.append('\n'.join(lines).strip())
-            chunks.append('')
+            builder.add_elements('\n'.join(lines).strip())
+            builder.add_elements(builder.build_spacer())
 
+        # Content
         for section_idx, section in enumerate(course.sections, start=1):
-            chunks.append(f'## {section_idx}. {section.title}'.strip())
-            chunks.append('')
+            builder.add_elements(builder.build_heading(2, f'{section_idx}. {section.title}'))
+            builder.add_elements(builder.build_spacer())
 
             for lesson_idx, lesson in enumerate(section.lessons, start=1):
-                chunks.append(f'### {section_idx}.{lesson_idx} {lesson.title}'.strip())
-                chunks.append('')
+                builder.add_elements(builder.build_heading(3, f'{section_idx}.{lesson_idx} {lesson.title}'))
+                builder.add_elements(builder.build_spacer())
 
                 for block in lesson.blocks:
                     rendered = block.render(fmt=OutputFormat.MD, assets_dir=assets_dir)
                     if rendered:
-                        chunks.append(rendered.strip())
-                        chunks.append('')
+                        builder.add_elements(rendered.strip())
+                        builder.add_elements(builder.build_spacer())
 
-        content = '\n\n'.join(c for c in chunks if c is not None).rstrip() + '\n'
-        output_path.write_text(content, encoding='utf-8')
+        builder.build()

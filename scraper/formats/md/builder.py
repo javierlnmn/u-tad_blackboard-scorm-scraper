@@ -1,12 +1,25 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from .html_parser import html_to_markdown
 
 
 class MarkdownBuilder:
-    @staticmethod
-    def build_html(html: str) -> str:
-        return html_to_markdown(html or '').strip()
+    def __init__(
+        self,
+        output_path: Path | None = None,
+        *,
+        elements: list[str] | None = None,
+    ) -> None:
+        self.output_path = output_path
+        self.elements: list[str] = elements if elements is not None else []
+
+    def add_elements(self, chunks: str | list[str]) -> None:
+        if isinstance(chunks, str):
+            self.elements.append(chunks)
+        else:
+            self.elements.extend(chunks)
 
     @staticmethod
     def build_heading(level: int, text: str) -> str:
@@ -14,8 +27,15 @@ class MarkdownBuilder:
         return f'{"#" * h} {text}'.strip()
 
     @staticmethod
+    def build_spacer() -> str:
+        return ''
+
+    @staticmethod
+    def build_html(html: str) -> str:
+        return html_to_markdown(html or '').strip()
+
+    @staticmethod
     def build_numbered_item(num: str, body: str) -> str:
-        """Render a numbered list item with hanging indent (for steps, etc.)."""
         prefix = f'{num}. '
         lines = body.splitlines() if body else ['']
         if not lines:
@@ -28,7 +48,6 @@ class MarkdownBuilder:
 
     @staticmethod
     def build_bullet_item(title: str, body: str) -> str:
-        """Render a bullet with **bold title** and indented body (accordion, tabs, etc.)."""
         lines: list[str] = [f'- **{title}**  ']
         if body:
             for ln in body.splitlines():
@@ -39,8 +58,7 @@ class MarkdownBuilder:
     def build_bullet_list(items: list[str]) -> str:
         return '\n'.join(f'- {s.strip()}' for s in items if s and s.strip()).strip()
 
-    @staticmethod
-    def build_numbered_list(items: list[str]) -> str:
+    def build_numbered_list(self, items: list[str]) -> str:
         lines: list[str] = []
         for i, s in enumerate((s for s in items if s and s.strip()), start=1):
             lines.append(f'{i}. {s.strip()}')
@@ -82,3 +100,8 @@ class MarkdownBuilder:
         lines = [fmt_row(h), '| ' + ' | '.join(['---'] * col_count) + ' |']
         lines.extend(fmt_row(r) for r in rows)
         return '\n'.join(lines)
+
+    def build(self) -> None:
+        if self.output_path is not None:
+            content = '\n\n'.join(c for c in self.elements if c is not None).rstrip() + '\n'
+            self.output_path.write_text(content, encoding='utf-8')

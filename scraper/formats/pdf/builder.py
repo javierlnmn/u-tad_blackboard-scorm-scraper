@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import re
 from pathlib import Path
 
 from bs4 import BeautifulSoup
@@ -47,11 +48,42 @@ class PDFBuilder:
     def build_title(self, text: str) -> list:
         return [Paragraph(safe_text(text), self.theme.title), Spacer(1, 0.08 * inch)]
 
-    def build_heading(self, text: str) -> list:
-        return [Paragraph(safe_text(text), self.theme.heading), Spacer(1, 0.06 * inch)]
+    def build_heading(self, text: str, anchor: str | None = None) -> list:
+        content = (f'<a name="{html.escape(anchor)}"/>' if anchor else '') + safe_text(text)
+        return [Paragraph(content, self.theme.heading), Spacer(1, 0.06 * inch)]
 
-    def build_subheading(self, text: str) -> list:
-        return [Paragraph(safe_text(text), self.theme.subheading), Spacer(1, 0.04 * inch)]
+    def build_subheading(self, text: str, anchor: str | None = None) -> list:
+        content = (f'<a name="{html.escape(anchor)}"/>' if anchor else '') + safe_text(text)
+        return [Paragraph(content, self.theme.subheading), Spacer(1, 0.04 * inch)]
+
+    def build_index_link(
+        self,
+        text: str,
+        anchor: str,
+        indent_pt: float = 0,
+    ) -> list:
+        m = re.match(r'^(\d+\.\d*\s+)(.*)$', (text or '').strip())
+        if m:
+            number, title = m.group(1), m.group(2)
+            primary = self.theme._heading_color
+            link = self.theme._link_color
+            inner = (
+                f'<font color="{html.escape(primary)}"><b>{safe_text(number.strip())}</b></font> '
+                f'<a href="#{html.escape(anchor)}" color="{html.escape(link)}"><u>{safe_text(title)}</u></a>'
+            )
+        else:
+            link = self.theme._link_color
+            inner = (
+                f'<a href="#{html.escape(anchor)}" color="{html.escape(link)}"><u>{safe_text(text)}</u></a>'
+            )
+        style = self.theme.normal
+        if indent_pt > 0:
+            style = ParagraphStyle(
+                f'IndexIndent{int(indent_pt)}',
+                parent=self.theme.normal,
+                leftIndent=indent_pt,
+            )
+        return [Paragraph(inner, style)]
 
     def build_paragraph(self, text: str) -> list:
         return [Paragraph(safe_text(text), self.theme.normal)]

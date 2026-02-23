@@ -89,6 +89,10 @@ class PDFTheme(ABC):
         return '#FFFFFF'
 
     @property
+    def _link_color(self) -> str:
+        return '#2563eb'
+
+    @property
     @abstractmethod
     def _callout_bg(self) -> str:
         raise NotImplementedError

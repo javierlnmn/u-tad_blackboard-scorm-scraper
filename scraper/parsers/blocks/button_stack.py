@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from scraper.formats.md import Markdown
+from scraper.formats.md import MarkdownBuilder
 from scraper.formats.pdf import html_to_flowables
 from scraper.parsers.blocks.base import LessonBlock
 
@@ -41,8 +41,8 @@ class ButtonStackBlock(LessonBlock):
 
         callouts: list[str] = []
         for desc_html, href in self.entries:
-            desc_md = Markdown.html(desc_html)
-            callouts.append(Markdown.link_callout(desc_md, href))
+            desc_md = MarkdownBuilder.build_html(desc_html)
+            callouts.append(MarkdownBuilder.build_link_callout(desc_md, href))
         return '\n\n'.join(c for c in callouts if c.strip()).strip()
 
     def _render_pdf(self, builder, *, assets_dir=None) -> list:

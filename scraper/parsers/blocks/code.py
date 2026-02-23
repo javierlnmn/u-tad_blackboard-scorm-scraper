@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from guesslang import Guess
 
-from scraper.formats.md import Markdown
+from scraper.formats.md import MarkdownBuilder
 from scraper.parsers.blocks.base import LessonBlock
 
 _GUESS: Guess | None = None
@@ -68,7 +68,7 @@ class CodeBlock(LessonBlock):
         self.lang = lang
 
     def _render_md(self, *, assets_dir=None) -> str:
-        return Markdown.code_block(self.code, self.lang)
+        return MarkdownBuilder.build_code_block(self.code, self.lang)
 
     def _render_pdf(self, builder, *, assets_dir=None) -> list:
         return builder.build_code_block(self.code, self.lang) if self.code else []

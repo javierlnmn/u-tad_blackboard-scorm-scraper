@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from scraper.formats.md import Markdown
+from scraper.formats.md import MarkdownBuilder
 from scraper.formats.pdf import html_to_flowables
 from scraper.parsers.blocks.base import LessonBlock
 
@@ -27,7 +27,7 @@ class TextBlock(LessonBlock):
         self.text = (self.text or '').strip()
 
     def _render_md(self, *, assets_dir=None) -> str:
-        md = Markdown.html(self.html)
+        md = MarkdownBuilder.build_html(self.html)
         return md if md else (self.text or '')
 
     def _render_pdf(self, builder, *, assets_dir=None) -> list:

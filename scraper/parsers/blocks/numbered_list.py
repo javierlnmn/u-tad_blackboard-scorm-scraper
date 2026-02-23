@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from scraper.formats.md import Markdown
+from scraper.formats.md import MarkdownBuilder
 from scraper.formats.pdf import html_to_flowables
 from scraper.parsers.blocks.base import LessonBlock
 
@@ -40,8 +40,8 @@ class NumberedListBlock(LessonBlock):
 
         rendered: list[str] = []
         for num, item_html in self.items:
-            md = Markdown.html(item_html) or ''
-            rendered.append(Markdown.numbered_item(num, md))
+            md = MarkdownBuilder.build_html(item_html) or ''
+            rendered.append(MarkdownBuilder.build_numbered_item(num, md))
         return '\n'.join(r for r in rendered if r.strip()).strip()
 
     def _render_pdf(self, builder, *, assets_dir=None) -> list:

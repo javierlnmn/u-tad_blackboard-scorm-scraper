@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from scraper.formats.md import Markdown
+from scraper.formats.md import MarkdownBuilder
 from scraper.formats.pdf import html_to_flowables
 from scraper.parsers.blocks.base import LessonBlock
 
@@ -38,8 +38,8 @@ class AccordionBlock(LessonBlock):
 
         lines: list[str] = []
         for title, body_html in self.items:
-            body_md = Markdown.html(body_html) or ''
-            lines.append(Markdown.bullet_item(title, body_md))
+            body_md = MarkdownBuilder.build_html(body_html) or ''
+            lines.append(MarkdownBuilder.build_bullet_item(title, body_md))
         return '\n'.join(lines).strip()
 
     def _render_pdf(self, builder, *, assets_dir=None) -> list:

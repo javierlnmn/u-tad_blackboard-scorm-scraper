@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from .builder import PDFBuilder
-from .html_flowables import html_to_flowables
+from .html_parser import html_to_flowables
 from .themes import (
     CrimsonTheme,
     ForestTheme,
@@ -12,7 +12,7 @@ from .themes import (
     SlateTheme,
     ThemeRegistry,
 )
-from .writer import write_course
+from .writer import PDFWriter
 
 __all__ = [
     'CrimsonTheme',
@@ -22,6 +22,6 @@ __all__ = [
     'PDFTheme',
     'SlateTheme',
     'ThemeRegistry',
+    'PDFWriter',
     'html_to_flowables',
-    'write_course',
 ]

@@ -49,12 +49,12 @@ def write_file(
 ) -> None:
     """Write course to file in the given format."""
     if fmt == OutputFormat.MD:
-        from scraper.formats.md import write_course as write_md
+        from scraper.formats.md import MDWriter
 
-        write_md(course, output_path, assets_dir=assets_dir)
+        MDWriter().write(course, output_path, assets_dir=assets_dir)
     elif fmt == OutputFormat.PDF:
-        from scraper.formats.pdf import write_course as write_pdf
+        from scraper.formats.pdf import PDFWriter
 
-        write_pdf(course, output_path, assets_dir=assets_dir, theme=pdf_theme)
+        PDFWriter().write(course, output_path, assets_dir=assets_dir, theme=pdf_theme)
     else:
         raise ValueError(f'Unsupported format: {fmt}')

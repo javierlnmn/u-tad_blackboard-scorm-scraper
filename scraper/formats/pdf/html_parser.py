@@ -7,7 +7,37 @@ from bs4 import BeautifulSoup
 from reportlab.platypus import Paragraph
 
 from .builder import PDFBuilder
-from .utils import html_inline_to_markup
+from .utils import link_tag
+
+
+def _html_inline_to_markup(node) -> str:
+    from bs4 import NavigableString
+
+    if isinstance(node, NavigableString):
+        return html.escape(str(node))
+    if not hasattr(node, 'name') or not node.name:
+        return html.escape(str(node))
+
+    name = node.name.lower()
+    if name == 'br':
+        return '<br/>'
+    if name in {'strong', 'b'}:
+        inner = ''.join(_html_inline_to_markup(c) for c in node.contents)
+        return f'<b>{inner}</b>' if inner.strip() else inner
+    if name in {'em', 'i'}:
+        inner = ''.join(_html_inline_to_markup(c) for c in node.contents)
+        return f'<i>{inner}</i>' if inner.strip() else inner
+    if name == 'a':
+        href = (node.get('href') or '').strip()
+        label = ''.join(_html_inline_to_markup(c) for c in node.contents).strip()
+        label = label or node.get_text(' ', strip=True)
+        if href:
+            return link_tag(href, label or href)
+        return html.escape(label)
+    if name == 'code':
+        inner = ''.join(_html_inline_to_markup(c) for c in node.contents)
+        return f'<font name="Courier">{html.escape(inner)}</font>'
+    return ''.join(_html_inline_to_markup(c) for c in node.contents)
 
 
 def html_to_flowables(
@@ -28,7 +58,7 @@ def html_to_flowables(
             return html.escape(str(node))
         if not hasattr(node, 'name'):
             return html.escape(str(node))
-        return html_inline_to_markup(node)
+        return _html_inline_to_markup(node)
 
     def render_inline_children(tag) -> str:
         return ''.join(render_inline(c) for c in tag.contents)

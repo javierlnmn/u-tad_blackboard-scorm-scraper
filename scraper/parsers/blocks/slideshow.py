@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from scraper.formats.md import Markdown
+from scraper.formats.md import MarkdownBuilder
 from scraper.formats.pdf import html_to_flowables
 from scraper.parsers.blocks.base import LessonBlock
 from scraper.utils.assets import ensure_asset, safe_basename_from_url, safe_filename
@@ -92,11 +92,11 @@ class SlideshowBlock(LessonBlock):
             for filename, url in self.image_url_by_filename.items():
                 ensure_asset(locator=self.locator, url=url, assets_dir=assets_dir, filename=filename)
 
-        intro_md = Markdown.html(self.intro_body_html) or self.intro_body_text or ''
+        intro_md = MarkdownBuilder.build_html(self.intro_body_html) or self.intro_body_text or ''
 
         lines: list[str] = []
         if self.intro_title:
-            lines.append(Markdown.heading(4, self.intro_title))
+            lines.append(MarkdownBuilder.build_heading(4, self.intro_title))
             if intro_md:
                 lines.append(intro_md.strip())
             lines.append('')
@@ -105,13 +105,13 @@ class SlideshowBlock(LessonBlock):
             lines.append('')
 
         for step_num, body_html, body_text, asset_filename, alt in self.steps:
-            body_md = Markdown.html(body_html) or body_text or ''
+            body_md = MarkdownBuilder.build_html(body_html) or body_text or ''
 
             if asset_filename:
-                img = Markdown.image(alt or 'image', f'assets/{asset_filename}')
-                lines.append(Markdown.numbered_item(step_num, f'{img}\n{body_md}' if body_md else img))
+                img = MarkdownBuilder.build_image(alt or 'image', f'assets/{asset_filename}')
+                lines.append(MarkdownBuilder.build_numbered_item(step_num, f'{img}\n{body_md}' if body_md else img))
             else:
-                lines.append(Markdown.numbered_item(step_num, body_md))
+                lines.append(MarkdownBuilder.build_numbered_item(step_num, body_md))
 
         out = '\n'.join(lines).strip()
         return out if out else (self.locator.text_content() or '').strip()

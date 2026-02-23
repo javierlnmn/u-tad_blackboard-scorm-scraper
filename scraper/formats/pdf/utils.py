@@ -1,5 +1,3 @@
-"""PDF helper utilities."""
-
 from __future__ import annotations
 
 import html
@@ -37,33 +35,3 @@ def link_tag(href: str, link_text: str) -> str:
     safe_href = html.escape(href, quote=True)
     safe_label = html.escape(link_text, quote=True)
     return f'<a href="{safe_href}" color="#2563eb">{safe_label}</a>'
-
-
-def html_inline_to_markup(node) -> str:
-    from bs4 import NavigableString
-
-    if isinstance(node, NavigableString):
-        return html.escape(str(node))
-    if not hasattr(node, 'name') or not node.name:
-        return html.escape(str(node))
-
-    name = node.name.lower()
-    if name == 'br':
-        return '<br/>'
-    if name in {'strong', 'b'}:
-        inner = ''.join(html_inline_to_markup(c) for c in node.contents)
-        return f'<b>{inner}</b>' if inner.strip() else inner
-    if name in {'em', 'i'}:
-        inner = ''.join(html_inline_to_markup(c) for c in node.contents)
-        return f'<i>{inner}</i>' if inner.strip() else inner
-    if name == 'a':
-        href = (node.get('href') or '').strip()
-        label = ''.join(html_inline_to_markup(c) for c in node.contents).strip()
-        label = label or node.get_text(' ', strip=True)
-        if href:
-            return link_tag(href, label or href)
-        return html.escape(label)
-    if name == 'code':
-        inner = ''.join(html_inline_to_markup(c) for c in node.contents)
-        return f'<font name="Courier">{html.escape(inner)}</font>'
-    return ''.join(html_inline_to_markup(c) for c in node.contents)

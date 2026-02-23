@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from scraper.formats.md import Markdown
+from scraper.formats.md import MarkdownBuilder
 from scraper.formats.pdf import html_to_flowables
 from scraper.parsers.blocks.base import LessonBlock
 from scraper.utils.assets import ensure_asset, safe_basename_from_url, safe_filename
@@ -83,12 +83,12 @@ class TabsBlock(LessonBlock):
         lines: list[str] = []
         for i, (title, body_html, body_text) in enumerate(self.tabs):
             title_str = title.strip() or f'Tab {i + 1}'
-            body_md = Markdown.html(body_html) or body_text or ''
+            body_md = MarkdownBuilder.build_html(body_html) or body_text or ''
 
-            lines.append(Markdown.bullet_item(title_str, body_md))
+            lines.append(MarkdownBuilder.build_bullet_item(title_str, body_md))
 
             for filename, alt in self.images_by_tab_index.get(i, []):
-                lines.append(f'  {Markdown.image(alt, f"assets/{filename}")}')
+                lines.append(f'  {MarkdownBuilder.build_image(alt, f"assets/{filename}")}')
 
         return '\n'.join(lines).strip()
 

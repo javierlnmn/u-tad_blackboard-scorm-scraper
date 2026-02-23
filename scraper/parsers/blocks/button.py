@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from scraper.formats.md import Markdown
+from scraper.formats.md import MarkdownBuilder
 from scraper.formats.pdf import html_to_flowables
 from scraper.parsers.blocks.base import LessonBlock
 
@@ -31,9 +31,9 @@ class ButtonBlock(LessonBlock):
         ).strip()
 
     def _render_md(self, *, assets_dir=None) -> str:
-        desc_md = Markdown.html(self.description_html)
+        desc_md = MarkdownBuilder.build_html(self.description_html)
         body = desc_md or (self.description_text or '')
-        return Markdown.link_callout(body, self.href)
+        return MarkdownBuilder.build_link_callout(body, self.href)
 
     def _render_pdf(self, builder, *, assets_dir=None) -> list:
         if not (self.description_html or self.description_text or self.href):

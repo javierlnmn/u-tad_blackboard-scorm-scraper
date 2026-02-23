@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from scraper.formats.md import Markdown
+from scraper.formats.md import MarkdownBuilder
 from scraper.formats.pdf import html_to_flowables
 from scraper.parsers.blocks.base import LessonBlock
 
@@ -38,8 +38,8 @@ class FlashcardsBlock(LessonBlock):
 
         lines: list[str] = []
         for title, back_html in self.cards:
-            back_md = Markdown.html(back_html)
-            lines.append(Markdown.bullet_item(title, back_md))
+            back_md = MarkdownBuilder.build_html(back_html)
+            lines.append(MarkdownBuilder.build_bullet_item(title, back_md))
         return '\n'.join(lines).strip()
 
     def _render_pdf(self, builder, *, assets_dir=None) -> list:

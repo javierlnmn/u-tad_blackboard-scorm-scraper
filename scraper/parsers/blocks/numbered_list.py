@@ -34,7 +34,7 @@ class NumberedListBlock(LessonBlock):
 
         self.items = items
 
-    def _render_md(self, *, assets_dir=None) -> str:
+    def _render_md(self, builder, assets_dir=None) -> str:
         if not self.items:
             return (self.locator.text_content() or '').strip()
 
@@ -44,11 +44,8 @@ class NumberedListBlock(LessonBlock):
             rendered.append(MarkdownBuilder.build_numbered_item(num, md))
         return '\n'.join(r for r in rendered if r.strip()).strip()
 
-    def _render_pdf(self, builder, *, assets_dir=None) -> list:
+    def _render_pdf(self, builder, assets_dir=None) -> list:
         if not self.items:
             return []
-        items_flows = [
-            html_to_flowables(html, builder, assets_dir=assets_dir)
-            for _, html in self.items
-        ]
+        items_flows = [html_to_flowables(html, builder, assets_dir=assets_dir) for _, html in self.items]
         return builder.build_numbered_list_with_content(items_flows)

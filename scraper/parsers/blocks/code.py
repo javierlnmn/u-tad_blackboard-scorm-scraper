@@ -54,8 +54,8 @@ class CodeBlock(LessonBlock):
 
     def _scrape(self) -> None:
         pre = self.locator.locator('pre.block-text__code').first
-        code = pre.inner_text() if pre.count() else self.locator.inner_text()
-        code = (code or '').rstrip('\n')
+        code = pre.text_content() if pre.count() else self.locator.text_content()
+        code = (code or '').rstrip('\n\r\t')
         self.code = code
 
         lang: str | None = None
@@ -67,8 +67,8 @@ class CodeBlock(LessonBlock):
 
         self.lang = lang
 
-    def _render_md(self, *, assets_dir=None) -> str:
+    def _render_md(self, builder, assets_dir=None) -> str:
         return MarkdownBuilder.build_code_block(self.code, self.lang)
 
-    def _render_pdf(self, builder, *, assets_dir=None) -> list:
+    def _render_pdf(self, builder, assets_dir=None) -> list:
         return builder.build_code_block(self.code, self.lang) if self.code else []

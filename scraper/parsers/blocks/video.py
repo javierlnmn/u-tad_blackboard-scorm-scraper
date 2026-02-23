@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 
 from scraper.parsers.blocks.base import LessonBlock
-from scraper.utils.assets import ensure_asset, safe_basename_from_url, safe_filename
+from scraper.utils.assets import safe_basename_from_url, safe_filename
 
 
 @dataclass
@@ -59,35 +58,12 @@ class VideoBlock(LessonBlock):
             msg = f'{msg} Source: {self.video_url}'
         return '\n'.join([f'> {line}'.rstrip() for line in msg.splitlines()]).strip()
 
-    def _render_md(self, *, assets_dir: Path | None = None) -> str:
-        if not self.video_url or not self.video_asset_filename or not assets_dir:
+    def _render_md(self, builder, assets_dir=None) -> str:
+        if not self.video_url:
             return self._render_video_unavailable()
+        return f'> [Link al vídeo]({self.video_url})'
 
-        ok = ensure_asset(
-            locator=self.locator,
-            url=self.video_url,
-            assets_dir=assets_dir,
-            filename=self.video_asset_filename,
-        )
-        if not ok:
-            return self._render_video_unavailable()
-
-        poster_attr = ''
-        if self.poster_url and self.poster_asset_filename:
-            if ensure_asset(
-                locator=self.locator,
-                url=self.poster_url,
-                assets_dir=assets_dir,
-                filename=self.poster_asset_filename,
-            ):
-                poster_attr = f' poster="assets/{self.poster_asset_filename}"'
-
-        # Use <video> HTML so the markdown output can embed it when supported.
-        return (
-            f'<video controls preload="metadata" src="assets/{self.video_asset_filename}"{poster_attr}>'
-            f'</video>'
-        ).strip()
-
-    def _render_pdf(self, builder, *, assets_dir=None) -> list:
-        msg = 'Video is not available in this output.'
-        return builder.build_callout(msg, self.video_url, link_text='View source')
+    def _render_pdf(self, builder, assets_dir=None) -> list:
+        if not self.video_url:
+            return builder.build_callout('Video is not available in this output.')
+        return builder.build_callout(href=self.video_url, link_text='Link al vídeo')

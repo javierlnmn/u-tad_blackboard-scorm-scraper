@@ -39,7 +39,7 @@ class GalleryCarouselBlock(LessonBlock):
 
         self.images = images
 
-    def _render_md(self, *, assets_dir: Path | None = None) -> str:
+    def _render_md(self, builder, assets_dir=None) -> str:
         if not self.images:
             return (self.locator.text_content() or '').strip()
 
@@ -49,7 +49,7 @@ class GalleryCarouselBlock(LessonBlock):
 
         return '\n\n'.join(f'![{alt}](assets/{filename})' for filename, alt, _ in self.images).strip()
 
-    def _render_pdf(self, builder, *, assets_dir: Path | None = None) -> list:
+    def _render_pdf(self, builder, assets_dir=None) -> list:
         if not self.images:
             return []
         out: list = []

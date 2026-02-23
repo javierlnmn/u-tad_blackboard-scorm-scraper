@@ -89,7 +89,7 @@ class PDFBuilder:
         return [Paragraph(safe_text(text), self.theme.normal)]
 
     def build_code_block(self, code: str, language: str | None = None) -> list:
-        raw_code = (code or '').strip()
+        raw_code = (code or '').strip('\n\r\t')
         if not raw_code:
             return []
 
@@ -185,7 +185,7 @@ class PDFBuilder:
         if not content_flowables:
             return []
 
-        _border_col = 12
+        _border_col = 9
         _content_col = MAX_CONTENT_WIDTH
         border_cell = Spacer(_border_col, 1)
         rows = [[border_cell, content_flowables[0]]]

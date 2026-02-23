@@ -86,7 +86,7 @@ class SlideshowBlock(LessonBlock):
         self.intro_body_html = (self.intro_body_html or '').strip()
         self.intro_body_text = (self.intro_body_text or '').strip()
 
-    def _render_md(self, *, assets_dir: Path | None = None) -> str:
+    def _render_md(self, builder, assets_dir=None) -> str:
         if assets_dir and self.image_url_by_filename:
             for filename, url in self.image_url_by_filename.items():
                 ensure_asset(locator=self.locator, url=url, assets_dir=assets_dir, filename=filename)
@@ -117,7 +117,7 @@ class SlideshowBlock(LessonBlock):
         out = '\n'.join(lines).strip()
         return out if out else (self.locator.text_content() or '').strip()
 
-    def _render_pdf(self, builder, *, assets_dir: Path | None = None) -> list:
+    def _render_pdf(self, builder, assets_dir=None) -> list:
         out: list = []
         if assets_dir and self.image_url_by_filename:
             for filename, url in self.image_url_by_filename.items():

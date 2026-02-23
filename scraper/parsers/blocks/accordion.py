@@ -32,7 +32,7 @@ class AccordionBlock(LessonBlock):
 
         self.items = items
 
-    def _render_md(self, *, assets_dir=None) -> str:
+    def _render_md(self, builder, assets_dir=None) -> str:
         if not self.items:
             return (self.locator.text_content() or '').strip()
 
@@ -42,7 +42,7 @@ class AccordionBlock(LessonBlock):
             lines.append(MarkdownBuilder.build_bullet_item(title, body_md))
         return '\n'.join(lines).strip()
 
-    def _render_pdf(self, builder, *, assets_dir=None) -> list:
+    def _render_pdf(self, builder, assets_dir=None) -> list:
         if not self.items:
             return []
         items_with_content: list[tuple[str, list]] = []

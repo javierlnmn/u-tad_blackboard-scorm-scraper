@@ -51,7 +51,7 @@ class LabeledImageBlock(LessonBlock):
         self.asset_filename = (self.asset_filename or '').strip() or None
         self.image_alt = (self.image_alt or '').strip()
 
-    def _render_md(self, *, assets_dir: Path | None = None) -> str:
+    def _render_md(self, builder, assets_dir=None) -> str:
         if assets_dir and self.image_url and self.asset_filename:
             ensure_asset(
                 locator=self.locator,
@@ -73,7 +73,7 @@ class LabeledImageBlock(LessonBlock):
         out = '\n'.join(lines).strip()
         return out if out else (self.locator.text_content() or '').strip()
 
-    def _render_pdf(self, builder, *, assets_dir: Path | None = None) -> list:
+    def _render_pdf(self, builder, assets_dir=None) -> list:
         out: list = []
         if assets_dir and self.image_url and self.asset_filename:
             ensure_asset(

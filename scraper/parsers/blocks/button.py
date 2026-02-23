@@ -30,12 +30,12 @@ class ButtonBlock(LessonBlock):
             self.locator.text_content() or ''
         ).strip()
 
-    def _render_md(self, *, assets_dir=None) -> str:
+    def _render_md(self, builder, assets_dir=None) -> str:
         desc_md = MarkdownBuilder.build_html(self.description_html)
         body = desc_md or (self.description_text or '')
         return MarkdownBuilder.build_link_callout(body, self.href)
 
-    def _render_pdf(self, builder, *, assets_dir=None) -> list:
+    def _render_pdf(self, builder, assets_dir=None) -> list:
         if not (self.description_html or self.description_text or self.href):
             return []
         body_flows = html_to_flowables(

@@ -26,11 +26,11 @@ class TextBlock(LessonBlock):
         self.html = (self.html or '').strip()
         self.text = (self.text or '').strip()
 
-    def _render_md(self, *, assets_dir=None) -> str:
+    def _render_md(self, builder, assets_dir=None) -> str:
         md = MarkdownBuilder.build_html(self.html)
         return md if md else (self.text or '')
 
-    def _render_pdf(self, builder, *, assets_dir=None) -> list:
+    def _render_pdf(self, builder, assets_dir=None) -> list:
         if not (self.html or self.text):
             return []
         flows = html_to_flowables(self.html or self.text, builder, assets_dir=assets_dir)

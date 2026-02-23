@@ -35,7 +35,7 @@ class ButtonStackBlock(LessonBlock):
 
         self.entries = entries
 
-    def _render_md(self, *, assets_dir=None) -> str:
+    def _render_md(self, builder, assets_dir=None) -> str:
         if not self.entries:
             return (self.locator.text_content() or '').strip()
 
@@ -45,7 +45,7 @@ class ButtonStackBlock(LessonBlock):
             callouts.append(MarkdownBuilder.build_link_callout(desc_md, href))
         return '\n\n'.join(c for c in callouts if c.strip()).strip()
 
-    def _render_pdf(self, builder, *, assets_dir=None) -> list:
+    def _render_pdf(self, builder, assets_dir=None) -> list:
         if not self.entries:
             return []
         out: list = []

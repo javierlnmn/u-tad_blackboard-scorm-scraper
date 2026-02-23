@@ -24,10 +24,10 @@ class TitleBlock(LessonBlock):
         self.title = (text or '').strip()
         self.level = level
 
-    def _render_md(self, *, assets_dir=None) -> str:
+    def _render_md(self, builder, assets_dir=None) -> str:
         source_level = self.level or 3
         h = min(max(source_level + 1, 4), 6)
         return MarkdownBuilder.build_heading(h, self.title)
 
-    def _render_pdf(self, builder, *, assets_dir=None) -> list:
+    def _render_pdf(self, builder, assets_dir=None) -> list:
         return builder.build_subheading(self.title) if self.title else []

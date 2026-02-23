@@ -14,8 +14,8 @@ class UnknownBlock(LessonBlock):
     def _scrape(self) -> None:
         self.text = (self.locator.inner_text() or '').strip()
 
-    def _render_md(self, *, assets_dir=None) -> str:
+    def _render_md(self, builder, assets_dir=None) -> str:
         return self.text
 
-    def _render_pdf(self, builder, *, assets_dir=None) -> list:
+    def _render_pdf(self, builder, assets_dir=None) -> list:
         return builder.build_paragraph(self.text) if self.text else []

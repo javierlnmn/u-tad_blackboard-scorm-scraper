@@ -72,7 +72,7 @@ class TabsBlock(LessonBlock):
         self.images = images
         self.images_by_tab_index = images_by_tab_index
 
-    def _render_md(self, *, assets_dir: Path | None = None) -> str:
+    def _render_md(self, builder, assets_dir=None) -> str:
         if not self.tabs:
             return (self.locator.text_content() or '').strip()
 
@@ -92,7 +92,7 @@ class TabsBlock(LessonBlock):
 
         return '\n'.join(lines).strip()
 
-    def _render_pdf(self, builder, *, assets_dir: Path | None = None) -> list:
+    def _render_pdf(self, builder, assets_dir=None) -> list:
         if not self.tabs:
             return []
         if assets_dir and self.images:

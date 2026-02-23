@@ -4,6 +4,8 @@ import html
 import re
 from pathlib import Path
 
+from pygments import lex
+from pygments.lexers import get_lexer_by_name
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
@@ -24,6 +26,52 @@ from reportlab.platypus import (
 from .config import MAX_CONTENT_WIDTH, PDF_FONT_JETBRAINS
 from .themes import OceanTheme, PDFTheme
 from .utils import link_tag, safe_text, wrap_code_lines
+
+_DEFAULT_CODE_STYLE = 'pastie'
+
+
+def _parse_color_from_style(style_str: str) -> str | None:
+    """Extract hex text color from Pygments style string (e.g. 'italic #888' -> '#888888')."""
+    if not style_str:
+        return None
+    for part in style_str.split():
+        part = part.strip()
+        if part.startswith('#') and 'bg:' not in part.lower():
+            hex_val = part.lstrip('#')
+            if len(hex_val) in (3, 6) and all(c in '0123456789abcdefABCDEF' for c in hex_val):
+                if len(hex_val) == 3:
+                    hex_val = ''.join(c * 2 for c in hex_val)
+                return '#' + hex_val.lower()
+    return None
+
+
+def _get_style_colors(style_name: str) -> dict:
+    """Build token->color map from a Pygments style."""
+    from pygments.styles import get_style_by_name
+
+    style = get_style_by_name(style_name)
+    colors_map = {}
+    for token_type, style_str in style.styles.items():
+        color = _parse_color_from_style(style_str)
+        if color:
+            colors_map[token_type] = color
+    return colors_map
+
+
+_STYLE_CACHE: dict[str, dict] = {}
+
+
+def _token_color(style_name: str, token_type) -> str:
+    """Get hex color for token from Pygments style, walking parent chain."""
+    if style_name not in _STYLE_CACHE:
+        _STYLE_CACHE[style_name] = _get_style_colors(style_name)
+    styles = _STYLE_CACHE[style_name]
+    t = token_type
+    while t is not None:
+        if t in styles:
+            return styles[t]
+        t = getattr(t, 'parent', None)
+    return '#000000'
 
 
 class PDFBuilder:
@@ -84,28 +132,54 @@ class PDFBuilder:
     def build_paragraph(self, text: str) -> list:
         return [Paragraph(safe_text(text), self.theme.normal)]
 
+    def _token_to_color(self, token_type) -> str:
+        """Map Pygments token type to hex color using Pygments style."""
+        return _token_color(_DEFAULT_CODE_STYLE, token_type)
+
     def build_code_block(self, code: str, language: str | None = None) -> list:
         raw_code = (code or '').strip('\n\r\t')
         if not raw_code:
             return []
 
-        raw_code = wrap_code_lines(raw_code, max_chars=85)
-        final_text = html.escape(raw_code)
+        raw_code = wrap_code_lines(raw_code, max_chars=70)
+        lang = (language or 'text').strip().lower() or 'text'
+        try:
+            lexer = get_lexer_by_name(lang, stripall=False)
+        except Exception:
+            lexer = get_lexer_by_name('text', stripall=False)
+
+        # Tokenize and build markup line-by-line so chunks never split inside a tag.
+        line_markups: list[str] = []
+        pieces: list[str] = []
+        for _ttype, value in lex(raw_code, lexer):
+            if not value:
+                continue
+            color = self._token_to_color(_ttype)
+            parts = value.split('\n')
+            for i, part in enumerate(parts):
+                if i > 0:
+                    line_markups.append(''.join(pieces))
+                    pieces = []
+                if part:
+                    piece_escaped = html.escape(part).replace('{', '&#123;').replace('}', '&#125;')
+                    pieces.append(f'<font color="{html.escape(color)}">{piece_escaped}</font>')
+
+        if pieces:
+            line_markups.append(''.join(pieces))
         code_style = ParagraphStyle(
             'CodeBlock',
             fontName=PDF_FONT_JETBRAINS,
             fontSize=9,
             leading=11,
         )
-        _code_border_col = 12
+        _code_border_col = 9
         _code_content_col = MAX_CONTENT_WIDTH
         _code_bg = colors.HexColor('#EBEBEB')
         _code_border = colors.HexColor('#9E9E9E')
-        lines = final_text.split('\n')
         _lines_per_page = 50
         rows = []
-        for i in range(0, len(lines), _lines_per_page):
-            chunk = '\n'.join(lines[i : i + _lines_per_page])
+        for i in range(0, len(line_markups), _lines_per_page):
+            chunk = '\n'.join(line_markups[i : i + _lines_per_page])
             code_flow = XPreformatted(chunk, code_style)
             rows.append([Spacer(_code_border_col, 1), code_flow])
         table = Table(rows, colWidths=[_code_border_col, _code_content_col], cornerRadii=[6, 6, 6, 6])
@@ -229,8 +303,12 @@ class PDFBuilder:
         if not data:
             return []
         ncols = max(len(row) for row in data)
+        if ncols == 0:
+            return []
         _table_width = MAX_CONTENT_WIDTH
-        col_widths = [_table_width / ncols] * ncols
+        _min_col = 30  # avoid negative availWidth when many columns
+        col_width = max(_table_width / ncols, _min_col)
+        col_widths = [col_width] * ncols
         _table_row_alt = colors.HexColor('#EBEBEB')
 
         header_style = ParagraphStyle(

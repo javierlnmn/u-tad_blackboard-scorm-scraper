@@ -7,24 +7,26 @@ from reportlab.lib import colors
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.pdfbase import pdfmetrics
 
-from .config import PDF_FONT, PDF_FONT_BOLD
+from .config import PDF_FONT_INTER, PDF_FONT_INTER_BOLD, PDF_FONT_JP, PDF_FONT_JP_BOLD
+
+
+def _resolve_font(font_name: str, fallback: str = 'Helvetica') -> str:
+    try:
+        pdfmetrics.getFont(font_name)
+        return font_name
+    except Exception:
+        return fallback
 
 
 class PDFTheme(ABC):
     name: str = 'default'
+    _font_name: str = PDF_FONT_INTER
+    _font_bold: str = PDF_FONT_INTER_BOLD
 
     def __init__(self) -> None:
         styles = getSampleStyleSheet()
-        try:
-            pdfmetrics.getFont(PDF_FONT)
-            font_name = PDF_FONT
-        except Exception:
-            font_name = 'Helvetica'
-        try:
-            pdfmetrics.getFont(PDF_FONT_BOLD)
-            font_bold = PDF_FONT_BOLD
-        except Exception:
-            font_bold = 'Helvetica-Bold'
+        font_name = _resolve_font(self._font_name)
+        font_bold = _resolve_font(self._font_bold)
 
         self.title = ParagraphStyle(
             'ThemeTitle',
@@ -138,6 +140,8 @@ class OceanTheme(PDFTheme):
 
 class ForestTheme(PDFTheme):
     name = 'forest'
+    _font_name = PDF_FONT_JP
+    _font_bold = PDF_FONT_JP_BOLD
 
     @property
     def _title_color(self) -> str:

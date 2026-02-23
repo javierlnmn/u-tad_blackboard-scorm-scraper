@@ -25,7 +25,7 @@ from reportlab.platypus import (
     XPreformatted,
 )
 
-from .config import MAX_CONTENT_WIDTH
+from .config import MAX_CONTENT_WIDTH, PDF_FONT_JETBRAINS
 from .themes import OceanTheme, PDFTheme
 from .utils import link_tag, safe_text, wrap_code_lines
 
@@ -129,7 +129,7 @@ class PDFBuilder:
         final_text = ''.join(pieces) or html.escape(raw_code)
         code_style = ParagraphStyle(
             'CodeBlock',
-            fontName='Courier',
+            fontName=PDF_FONT_JETBRAINS,
             fontSize=9,
             leading=11,
         )

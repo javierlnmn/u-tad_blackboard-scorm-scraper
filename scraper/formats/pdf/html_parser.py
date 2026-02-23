@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from reportlab.platypus import Paragraph
 
 from .builder import PDFBuilder
+from .config import PDF_FONT_JETBRAINS
 from .utils import link_tag
 
 
@@ -36,7 +37,7 @@ def _html_inline_to_markup(node) -> str:
         return html.escape(label)
     if name == 'code':
         inner = ''.join(_html_inline_to_markup(c) for c in node.contents)
-        return f'<font name="Courier">{html.escape(inner)}</font>'
+        return f'<font name="{html.escape(PDF_FONT_JETBRAINS)}">{html.escape(inner)}</font>'
     return ''.join(_html_inline_to_markup(c) for c in node.contents)
 
 

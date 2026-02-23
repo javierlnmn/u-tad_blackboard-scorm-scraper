@@ -3,7 +3,8 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from scraper.config import OutputFormat
+from scraper.config import DEFAULT_PDF_THEME, OutputFormat
+from scraper.formats.pdf.themes import PDFTheme
 from scraper.models.course_scheme import CourseScheme
 
 logger = logging.getLogger(__name__)
@@ -15,7 +16,7 @@ def write_course(
     *,
     output_formats: list[OutputFormat] | None = None,
     output_format: OutputFormat | str | None = None,
-    pdf_theme: str | None = None,
+    pdf_theme: PDFTheme = DEFAULT_PDF_THEME,
 ) -> None:
     output_dir = Path(path)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -51,7 +52,7 @@ def write_file(
     fmt: OutputFormat,
     *,
     assets_dir: Path,
-    pdf_theme: str | None = None,
+    pdf_theme: PDFTheme = DEFAULT_PDF_THEME,
 ) -> None:
     if fmt == OutputFormat.MD:
         from scraper.formats.md import MDWriter
@@ -60,6 +61,6 @@ def write_file(
     elif fmt == OutputFormat.PDF:
         from scraper.formats.pdf import PDFWriter
 
-        PDFWriter().write(course, output_path, assets_dir=assets_dir, theme=pdf_theme)
+        PDFWriter(theme=pdf_theme).write(course, output_path, assets_dir=assets_dir)
     else:
         raise ValueError(f'Unsupported format: {fmt}')

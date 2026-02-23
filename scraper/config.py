@@ -6,6 +6,12 @@ from pathlib import Path
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
+def _get_default_pdf_theme():  # Lazy to avoid circular import
+    from scraper.formats.pdf.themes import ThemeRegistry
+
+    return ThemeRegistry.from_name('ocean').get_theme()
+
+
 class OutputFormat(Enum):
     MD = ('md', 'Markdown')
     PDF = ('pdf', 'PDF')
@@ -28,7 +34,7 @@ DEFAULT_VIEWPORT_WIDTH = 1440
 DEFAULT_VIEWPORT_HEIGHT = 900
 DEFAULT_COURSE_NAME = 'course'
 DEFAULT_OUTPUT_FORMAT = OutputFormat.MD
-DEFAULT_PDF_THEME = 'ocean'
+DEFAULT_PDF_THEME = _get_default_pdf_theme()
 
 
 class Config:

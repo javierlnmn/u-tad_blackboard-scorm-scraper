@@ -102,13 +102,18 @@ def run_setup_wizard() -> Config:
 
     pdf_theme = current.pdf_theme
     download_videos = current.download_videos
+
     if OutputFormat.PDF in output_formats:
         theme_options = [(t, t.capitalize()) for t in ThemeRegistry.list_themes()]
-        pdf_theme = _prompt_menu(
+        theme_name = getattr(current.pdf_theme, 'name', 'ocean')
+        default_id = theme_name if theme_name in {t for t, _ in theme_options} else 'ocean'
+        selected_name = _prompt_menu(
             'PDF theme:',
             options=theme_options,
-            default_id=current.pdf_theme if current.pdf_theme in {t for t, _ in theme_options} else 'ocean',
+            default_id=default_id,
         )
+        pdf_theme = ThemeRegistry.from_name(selected_name).get_theme()
+
     if OutputFormat.MD in output_formats:
         raw = input('Download videos? (y/n) [n]: ').strip().lower()
         download_videos = raw in ('y', 'yes')

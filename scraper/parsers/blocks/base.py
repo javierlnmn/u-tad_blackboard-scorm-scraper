@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from playwright.sync_api import Locator
 
@@ -14,6 +14,7 @@ from scraper.formats.pdf import PDFBuilder
 @dataclass
 class LessonBlock(ABC):
     query_selector: ClassVar[str] = ''
+    skip: ClassVar[bool] = False
 
     block_id: str | None
     locator: Locator
@@ -36,10 +37,22 @@ class LessonBlock(ABC):
         """Return flowables for this block's PDF content."""
         raise NotImplementedError
 
-    def render(self, fmt: OutputFormat = OutputFormat.MD, *, assets_dir: Path | None = None) -> str:
-        render_fn = getattr(self, f'_render_{fmt.extension}', None)
-        if not callable(render_fn):
-            render_fn = self._render_md
+    def render(
+        self,
+        fmt: OutputFormat = OutputFormat.MD,
+        *,
+        assets_dir: Path | None = None,
+        builder: PDFBuilder | None = None,
+    ) -> Any:
+        if self.skip:
+            return None
 
-        out = render_fn(assets_dir=assets_dir)
-        return (out or '').rstrip()
+        if fmt == OutputFormat.PDF:
+            if not builder:
+                raise ValueError('PDF builder is required when rendering PDF blocks.')
+            return self._render_pdf(builder, assets_dir=assets_dir)
+
+        if fmt == OutputFormat.MD:
+            return self._render_md(assets_dir=assets_dir)
+
+        raise ValueError(f'Unknown output format: {fmt!r}')

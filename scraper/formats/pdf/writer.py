@@ -4,6 +4,7 @@ from pathlib import Path
 
 from reportlab.lib.units import inch
 
+from scraper.config import OutputFormat
 from scraper.formats.base import CourseWriter
 
 from .builder import PDFBuilder
@@ -37,7 +38,9 @@ class PDFWriter(CourseWriter):
                 lesson_flowables = builder.build_subheading(f'{section_idx}.{lesson_idx} {lesson.title}')
 
                 for block in lesson.blocks:
-                    lesson_flowables.extend(block._render_pdf(builder, assets_dir=assets_dir))
+                    flowables = block.render(fmt=OutputFormat.PDF, builder=builder, assets_dir=assets_dir)
+                    if flowables:
+                        lesson_flowables.extend(flowables)
 
                 builder.add_elements(lesson_flowables)
 

@@ -3,6 +3,7 @@ from scraper.parsers.blocks.base import LessonBlock
 from scraper.parsers.blocks.button import ButtonBlock
 from scraper.parsers.blocks.button_stack import ButtonStackBlock
 from scraper.parsers.blocks.code import CodeBlock
+from scraper.parsers.blocks.end_of_lesson import EndOfLessonBlock
 from scraper.parsers.blocks.flashcards import FlashcardsBlock
 from scraper.parsers.blocks.gallery_carousel import GalleryCarouselBlock
 from scraper.parsers.blocks.image import ImageBlock
@@ -28,6 +29,7 @@ __all__ = [
     'ImageBlock',
     'LabeledImageBlock',
     'NumberedListBlock',
+    'EndOfLessonBlock',
     'SlideshowBlock',
     'TabsBlock',
     'VideoBlock',

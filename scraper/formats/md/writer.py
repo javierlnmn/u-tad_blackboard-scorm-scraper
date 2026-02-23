@@ -49,9 +49,9 @@ class MDWriter(CourseWriter):
                 chunks.append('')
 
                 for block in lesson.blocks:
-                    rendered = block.render(fmt=OutputFormat.MD, assets_dir=assets_dir).strip()
+                    rendered = block.render(fmt=OutputFormat.MD, assets_dir=assets_dir)
                     if rendered:
-                        chunks.append(rendered)
+                        chunks.append(rendered.strip())
                         chunks.append('')
 
         content = '\n\n'.join(c for c in chunks if c is not None).rstrip() + '\n'

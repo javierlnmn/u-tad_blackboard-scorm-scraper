@@ -7,6 +7,7 @@ from scraper.parsers.blocks import (
     ButtonBlock,
     ButtonStackBlock,
     CodeBlock,
+    EndOfLessonBlock,
     FlashcardsBlock,
     GalleryCarouselBlock,
     ImageBlock,
@@ -29,6 +30,7 @@ class BlockParser:
     def _identify_block(self) -> type[LessonBlock]:
         # Order matters
         for block_cls in (
+            EndOfLessonBlock,
             CodeBlock,
             TitleBlock,
             AccordionBlock,

@@ -4,10 +4,6 @@ import html
 import re
 from pathlib import Path
 
-from bs4 import BeautifulSoup
-from pygments import highlight
-from pygments.formatters import HtmlFormatter
-from pygments.lexers import get_lexer_by_name
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
@@ -94,39 +90,7 @@ class PDFBuilder:
             return []
 
         raw_code = wrap_code_lines(raw_code, max_chars=85)
-        lang = (language or 'text').strip().lower() or 'text'
-
-        try:
-            lexer = get_lexer_by_name(lang, stripall=False)
-        except Exception:
-            lexer = get_lexer_by_name('text', stripall=False)
-
-        formatter = HtmlFormatter(nowrap=True, noclasses=True)
-        highlighted_html = highlight(raw_code, lexer, formatter)
-        soup = BeautifulSoup(highlighted_html, 'html.parser')
-        pieces: list[str] = []
-
-        def _walk(node) -> None:
-            if hasattr(node, 'name') and node.name == 'span':
-                style = node.get('style', '')
-                color = 'black'
-                if 'color:' in style:
-                    part = style.split('color:')[-1].split(';')[0].strip()
-                    if part:
-                        color = part
-                text = html.escape(node.get_text())
-                pieces.append(f'<font color="{html.escape(color)}">{text}</font>')
-            elif hasattr(node, 'children'):
-                for child in node.children:
-                    _walk(child)
-            else:
-                s = str(node)
-                if s:
-                    pieces.append(html.escape(s))
-
-        for child in soup.children:
-            _walk(child)
-        final_text = ''.join(pieces) or html.escape(raw_code)
+        final_text = html.escape(raw_code)
         code_style = ParagraphStyle(
             'CodeBlock',
             fontName=PDF_FONT_JETBRAINS,

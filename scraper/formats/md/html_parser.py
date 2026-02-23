@@ -51,10 +51,20 @@ def _render_node_as_blocks(node) -> list[str]:
     return [txt] if txt else []
 
 
+def _is_visually_hidden(node) -> bool:
+    if not isinstance(node, Tag):
+        return False
+    classes = node.get('class') or []
+    return any('visually-hidden' in str(c) for c in classes)
+
+
 def _render_inline(node) -> str:
     if isinstance(node, NavigableString):
         return str(node)
     if not isinstance(node, Tag):
+        return ''
+
+    if _is_visually_hidden(node):
         return ''
 
     name = node.name.lower()

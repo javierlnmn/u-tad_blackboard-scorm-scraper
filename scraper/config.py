@@ -40,6 +40,7 @@ class Config:
         self.output_format = DEFAULT_OUTPUT_FORMAT
         self.output_path = f'./output/{self.course_name}'
         self.pdf_theme = DEFAULT_PDF_THEME
+        self.download_videos = False
 
 
 _CONFIG = Config()

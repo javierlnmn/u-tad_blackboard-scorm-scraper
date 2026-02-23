@@ -11,6 +11,13 @@ from .config import PDF_FONT_JETBRAINS
 from .utils import link_tag
 
 
+def _is_visually_hidden(node) -> bool:
+    if not hasattr(node, 'get'):
+        return False
+    classes = node.get('class') or []
+    return any('visually-hidden' in str(c) for c in classes)
+
+
 def _html_inline_to_markup(node) -> str:
     from bs4 import NavigableString
 
@@ -18,6 +25,9 @@ def _html_inline_to_markup(node) -> str:
         return html.escape(str(node))
     if not hasattr(node, 'name') or not node.name:
         return html.escape(str(node))
+
+    if _is_visually_hidden(node):
+        return ''
 
     name = node.name.lower()
     if name == 'br':

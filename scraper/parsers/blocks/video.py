@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from scraper.config import get_config
 from scraper.parsers.blocks.base import LessonBlock
-from scraper.utils.assets import safe_basename_from_url, safe_filename
+from scraper.utils.assets import ensure_asset, safe_basename_from_url, safe_filename
 
 
 @dataclass
@@ -61,7 +62,34 @@ class VideoBlock(LessonBlock):
     def _render_md(self, builder, assets_dir=None) -> str:
         if not self.video_url:
             return self._render_video_unavailable()
-        return f'> [Link al vídeo]({self.video_url})'
+
+        if not get_config().download_videos:
+            return f'> [Link al vídeo]({self.video_url})'
+
+        if not self.video_asset_filename or not assets_dir:
+            return self._render_video_unavailable()
+
+        ok = ensure_asset(
+            locator=self.locator,
+            url=self.video_url,
+            assets_dir=assets_dir,
+            filename=self.video_asset_filename,
+        )
+        if not ok:
+            return self._render_video_unavailable()
+        poster_attr = ''
+        if self.poster_url and self.poster_asset_filename and assets_dir:
+            if ensure_asset(
+                locator=self.locator,
+                url=self.poster_url,
+                assets_dir=assets_dir,
+                filename=self.poster_asset_filename,
+            ):
+                poster_attr = f' poster="assets/{self.poster_asset_filename}"'
+        return (
+            f'<video controls preload="metadata" src="assets/{self.video_asset_filename}"{poster_attr}>'
+            f'</video>'
+        ).strip()
 
     def _render_pdf(self, builder, assets_dir=None) -> list:
         if not self.video_url:

@@ -221,7 +221,7 @@ class CrimsonTheme(PDFTheme):
 
     @property
     def _page_bg(self) -> str:
-        return '#EDE8E8'
+        return '#F4F2F2'
 
 
 class ThemeRegistry(Enum):

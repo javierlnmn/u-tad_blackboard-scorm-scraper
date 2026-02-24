@@ -27,11 +27,9 @@ class PDFWriter(CourseWriter):
         self,
         course,
         output_path: Path,
-        *,
         assets_dir: Path,
-        **kwargs: object,
     ) -> None:
-        builder = PDFBuilder(output_path, theme=self.theme)
+        builder = PDFBuilder(output_path=output_path, theme=self.theme)
         builder.add_elements(builder.build_title(course.title))
         builder.add_elements(builder.build_spacer(0.1 * inch))
 

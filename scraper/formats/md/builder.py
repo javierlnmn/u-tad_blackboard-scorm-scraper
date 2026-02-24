@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from scraper.formats.base import CourseBuilder
+
 from .html_parser import html_to_markdown
 
 
-class MarkdownBuilder:
+class MarkdownBuilder(CourseBuilder):
     def __init__(
         self,
         output_path: Path | None = None,
-        *,
         elements: list[str] | None = None,
     ) -> None:
         self.output_path = output_path
@@ -20,6 +21,11 @@ class MarkdownBuilder:
             self.elements.append(chunks)
         else:
             self.elements.extend(chunks)
+
+    def build(self) -> None:
+        if self.output_path is not None:
+            content = '\n\n'.join(c for c in self.elements if c is not None).rstrip() + '\n'
+            self.output_path.write_text(content, encoding='utf-8')
 
     @staticmethod
     def build_heading(level: int, text: str) -> str:
@@ -100,8 +106,3 @@ class MarkdownBuilder:
         lines = [fmt_row(h), '| ' + ' | '.join(['---'] * col_count) + ' |']
         lines.extend(fmt_row(r) for r in rows)
         return '\n'.join(lines)
-
-    def build(self) -> None:
-        if self.output_path is not None:
-            content = '\n\n'.join(c for c in self.elements if c is not None).rstrip() + '\n'
-            self.output_path.write_text(content, encoding='utf-8')

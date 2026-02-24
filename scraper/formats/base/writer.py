@@ -10,7 +10,5 @@ class CourseWriter(ABC):
         self,
         course,
         output_path: Path,
-        *,
         assets_dir: Path,
-        **kwargs: object,
     ) -> None: ...

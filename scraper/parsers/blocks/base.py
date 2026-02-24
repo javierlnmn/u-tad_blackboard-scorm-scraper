@@ -8,6 +8,7 @@ from typing import Any, ClassVar
 from playwright.sync_api import Locator
 
 from scraper.config import OutputFormat
+from scraper.formats.base import CourseBuilder
 from scraper.formats.md import MarkdownBuilder
 from scraper.formats.pdf import PDFBuilder
 
@@ -42,7 +43,7 @@ class LessonBlock(ABC):
         self,
         fmt: OutputFormat = OutputFormat.MD,
         assets_dir: Path | None = None,
-        builder: PDFBuilder | MarkdownBuilder | None = None,
+        builder: CourseBuilder | None = None,
     ) -> Any:
         if self.skip:
             return None

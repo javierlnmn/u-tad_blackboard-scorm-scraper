@@ -14,11 +14,9 @@ class MDWriter(CourseWriter):
         self,
         course,
         output_path: Path,
-        *,
         assets_dir: Path,
-        **kwargs: object,
     ) -> None:
-        builder = MarkdownBuilder(output_path)
+        builder = MarkdownBuilder(output_path=output_path)
 
         builder.add_elements(builder.build_heading(1, course.title))
         builder.add_elements(builder.build_spacer())

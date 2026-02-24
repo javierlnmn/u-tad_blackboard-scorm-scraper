@@ -23,6 +23,8 @@ from reportlab.platypus import (
     XPreformatted,
 )
 
+from scraper.formats.base import CourseBuilder
+
 from .config import MAX_CONTENT_WIDTH, MAX_IMAGE_HEIGHT, PDF_FONT_JETBRAINS
 from .themes import OceanTheme, PDFTheme
 from .utils import link_tag, safe_text, wrap_code_lines
@@ -74,20 +76,27 @@ def _token_color(style_name: str, token_type) -> str:
     return '#000000'
 
 
-class PDFBuilder:
+class PDFBuilder(CourseBuilder):
     def __init__(
         self,
         output_path: Path | None = None,
-        *,
-        theme: PDFTheme | None = None,
         elements: list | None = None,
+        theme: PDFTheme | None = None,
     ) -> None:
         self.elements = elements if elements is not None else []
         self.theme = theme or OceanTheme()
         self.doc = SimpleDocTemplate(str(output_path), pagesize=A4)
 
-    def add_elements(self, flowables: list) -> None:
-        self.elements.extend(flowables)
+    def add_elements(self, elements: list) -> None:
+        self.elements.extend(elements)
+
+    def build(self) -> None:
+        if self.doc:
+            self.doc.build(
+                self.elements,
+                onFirstPage=self._draw_page_bg,
+                onLaterPages=self._draw_page_bg,
+            )
 
     def build_title(self, text: str) -> list:
         return [Paragraph(safe_text(text), self.theme.title), Spacer(1, 0.08 * inch)]
@@ -367,11 +376,3 @@ class PDFBuilder:
         canvas.setFillColor(self.theme.page_bg)
         canvas.rect(0, 0, self.doc.pagesize[0], self.doc.pagesize[1], fill=True, stroke=False)
         canvas.restoreState()
-
-    def build(self) -> None:
-        if self.doc:
-            self.doc.build(
-                self.elements,
-                onFirstPage=self._draw_page_bg,
-                onLaterPages=self._draw_page_bg,
-            )
